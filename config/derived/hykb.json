@@ -1,0 +1,184 @@
+{
+  "entries": [
+    {
+      "name": "原神",
+      "fid": 106235,
+      "match_label": "原神(官服)-月之七 好评原声音轨开放世界冒险 8.5分434.19M2087.4万下载",
+      "priority": "high"
+    },
+    {
+      "name": "王者荣耀世界",
+      "fid": 138865,
+      "match_label": "王者荣耀世界 高自由度近期下载飙升开放世界 6.3分1.85G49.5万下载",
+      "priority": "high"
+    },
+    {
+      "name": "燕云十六声",
+      "fid": 146289,
+      "match_label": "燕云十六声(官服) 多平台开放世界动作 7.3分1.94G192.2万下载",
+      "priority": "high"
+    },
+    {
+      "name": "逆水寒手游",
+      "fid": 122984,
+      "match_label": "逆水寒(官服) 主机级画质开放世界高画质 7.5分1.34G269.1万下载",
+      "priority": "high"
+    },
+    {
+      "name": "天涯明月刀手游",
+      "fid": 98923,
+      "match_label": "天涯明月刀·世界 多平台动作端游改编 7.5分2.07G39万下载",
+      "priority": "high"
+    },
+    {
+      "name": "异环",
+      "fid": 172057,
+      "match_label": "异环-自由开放都市(官服) 高自由度近期下载飙升多端互通 6.3分897.15M93.2万下载",
+      "priority": "high"
+    },
+    {
+      "name": "鸣潮",
+      "fid": 143964,
+      "match_label": "鸣潮-3.3版本(官服) 超爽打击近期下载飙升开放世界 7.5分1.87G476.2万下载",
+      "priority": "high"
+    },
+    {
+      "name": "地下城与勇士手游",
+      "fid": 84610,
+      "match_label": "地下城与勇士：起源 动作格斗横版 4.1分1.74G46.9万下载",
+      "priority": "high"
+    },
+    {
+      "name": "剑网3",
+      "fid": 85816,
+      "match_label": "剑网3指尖江湖 高自由度端游改编武侠 5.8分1.92G14万下载",
+      "priority": "normal"
+    },
+    {
+      "name": "新剑侠情缘手游",
+      "fid": null,
+      "match_label": "剑侠情缘手游 MMO即时战斗角色扮演 7.7分1.85G26578下载  (置信不足，可能噪声)",
+      "priority": "normal",
+      "_hint": "hykb 自动搜索置信不足。请到 https://m.3839.com/search/?ac=search_result&q=%E6%96%B0%E5%89%91%E4%BE%A0%E6%83%85%E7%BC%98%E6%89%8B%E6%B8%B8 手动找到游戏，把 URL 里的 fid 填入此处。"
+    },
+    {
+      "name": "天龙八部手游",
+      "fid": 75668,
+      "match_label": "天龙八部 MMO角色扮演武侠 6.4分1.97G27673下载",
+      "priority": "normal"
+    },
+    {
+      "name": "诛仙手游",
+      "fid": 132712,
+      "match_label": "诛仙2(官服) 多平台MMO开放世界 6.6分2.81G42883下载",
+      "priority": "normal"
+    },
+    {
+      "name": "倩女幽魂手游",
+      "fid": 72385,
+      "match_label": "倩女幽魂 端游改编即时战斗角色扮演 7.8分1.91G16.3万下载",
+      "priority": "normal"
+    },
+    {
+      "name": "网易一梦江湖",
+      "fid": null,
+      "match_label": "江湖如梦 角色扮演国潮武侠 7.3分3.01G22973下载  (置信不足，可能噪声)",
+      "priority": "normal",
+      "_hint": "hykb 自动搜索置信不足。请到 https://m.3839.com/search/?ac=search_result&q=%E7%BD%91%E6%98%93%E4%B8%80%E6%A2%A6%E6%B1%9F%E6%B9%96 手动找到游戏，把 URL 里的 fid 填入此处。"
+    },
+    {
+      "name": "网易梦幻西游手游",
+      "fid": null,
+      "match_label": "梦幻西游(官服)-国民级回合RPG 多平台多端互通端游改编 7.5分1.95G21万下载  (置信不足，可能噪声)",
+      "priority": "normal",
+      "_hint": "hykb 自动搜索置信不足。请到 https://m.3839.com/search/?ac=search_result&q=%E7%BD%91%E6%98%93%E6%A2%A6%E5%B9%BB%E8%A5%BF%E6%B8%B8%E6%89%8B%E6%B8%B8 手动找到游戏，把 URL 里的 fid 填入此处。"
+    },
+    {
+      "name": "大话西游手游",
+      "fid": 61102,
+      "match_label": "大话西游(官服)-经典回合制 端游改编西游MMO 7.0分1.86G38138下载",
+      "priority": "normal"
+    },
+    {
+      "name": "幻唐志逍遥外传",
+      "fid": null,
+      "match_label": "幻唐志：逍遥外传 MMO角色扮演策略 7.1分635.51M70500下载  (置信不足，可能噪声)",
+      "priority": "low",
+      "_hint": "hykb 自动搜索置信不足。请到 https://m.3839.com/search/?ac=search_result&q=%E5%B9%BB%E5%94%90%E5%BF%97%E9%80%8D%E9%81%A5%E5%A4%96%E4%BC%A0 手动找到游戏，把 URL 里的 fid 填入此处。"
+    },
+    {
+      "name": "魔兽世界",
+      "fid": 170086,
+      "match_label": "魔兽世界-PC 角色扮演多人联机冒险 8.2分",
+      "priority": "low"
+    },
+    {
+      "name": "热血传奇手游",
+      "fid": 49032,
+      "match_label": "热血传奇手机版 端游改编即时战斗角色扮演 6.6分1.68G25757下载",
+      "priority": "low"
+    },
+    {
+      "name": "御龙在天手游",
+      "fid": 70933,
+      "match_label": "御龙在天 端游改编即时战斗角色扮演 8.2分1.47G21062下载",
+      "priority": "low"
+    },
+    {
+      "name": "原始征途手游",
+      "fid": 151088,
+      "match_label": "原始征途 MMO角色扮演怀旧向 6.7分400.13M6256下载",
+      "priority": "low"
+    },
+    {
+      "name": "逆水寒",
+      "fid": 122984,
+      "match_label": "逆水寒(官服) 主机级画质开放世界高画质 7.5分1.34G269.1万下载",
+      "priority": "low"
+    },
+    {
+      "name": "三国志战略版官方",
+      "fid": null,
+      "match_label": "狼人杀-官方正版测试服 策略解谜烧脑 6.7分1.20G125.8万热度  (置信不足，可能噪声)",
+      "priority": "high",
+      "_hint": "hykb 自动搜索置信不足。请到 https://m.3839.com/search/?ac=search_result&q=%E4%B8%89%E5%9B%BD%E5%BF%97%E6%88%98%E7%95%A5%E7%89%88%E5%AE%98%E6%96%B9 手动找到游戏，把 URL 里的 fid 填入此处。"
+    },
+    {
+      "name": "率土之滨手游",
+      "fid": 65018,
+      "match_label": "率土之滨(官服) 策略三国战争 6.7分1.98G73万下载",
+      "priority": "high"
+    },
+    {
+      "name": "万国觉醒",
+      "fid": 99944,
+      "match_label": "万国觉醒 多平台策略SLG 5.7分1.78G72.3万下载",
+      "priority": "high"
+    },
+    {
+      "name": "问道手游",
+      "fid": 66232,
+      "match_label": "问道 端游改编回合角色扮演 6.2分1.94G40698下载",
+      "priority": "normal"
+    },
+    {
+      "name": "三国志幻想大陆",
+      "fid": 121714,
+      "match_label": "三国志幻想大陆 二次元三国养成 7.9分855.28M33.8万下载",
+      "priority": "normal"
+    },
+    {
+      "name": "王国纪元",
+      "fid": 93546,
+      "match_label": "王国纪元 策略模拟经营战争 6.5分1.99G21.9万下载",
+      "priority": "normal"
+    },
+    {
+      "name": "游族少年三国志",
+      "fid": null,
+      "match_label": "少年三国志2 卡牌回合三国 7.4分547.73M12.6万下载  (置信不足，可能噪声)",
+      "priority": "low",
+      "_hint": "hykb 自动搜索置信不足。请到 https://m.3839.com/search/?ac=search_result&q=%E6%B8%B8%E6%97%8F%E5%B0%91%E5%B9%B4%E4%B8%89%E5%9B%BD%E5%BF%97 手动找到游戏，把 URL 里的 fid 填入此处。"
+    }
+  ]
+}

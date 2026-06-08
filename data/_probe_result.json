@@ -1,0 +1,211 @@
+[
+  {
+    "name": "原神",
+    "url": "https://ys.mihoyo.com/main/news/list?type=2",
+    "html_size": 7680,
+    "status": "NO_PATTERN"
+  },
+  {
+    "name": "王者荣耀世界",
+    "url": "https://world.qq.com/gicp/news/1191/0/7091/2.html",
+    "html_size": 31932,
+    "status": "AUTO_OK",
+    "selectors": {
+      "item": "div.switch_box",
+      "title": "a",
+      "link": "a@href",
+      "date": "a.slide_cont"
+    },
+    "_probe": {
+      "_sample_count": 22,
+      "_sample_title": "《王者荣耀世界》S1赛季情报总览 海量赛季情报正式解锁，多项体验优化调整内容揭晓，还有超多福利奉上！ 2026-05-2",
+      "_sample_href": "/gicp/news/1192/18791212.html"
+    }
+  },
+  {
+    "name": "燕云十六声",
+    "url": "https://www.yysls.cn/news/",
+    "html_size": 22352,
+    "status": "NO_PATTERN"
+  },
+  {
+    "name": "逆水寒手游",
+    "url": "https://h.163.com/news/update/index.html",
+    "html_size": 13228,
+    "status": "NO_PATTERN"
+  },
+  {
+    "name": "天涯明月刀手游",
+    "url": "https://ty.qq.com/gicp/news/666/2/13167/2.html",
+    "html_size": 17583,
+    "status": "AUTO_OK",
+    "selectors": {
+      "item": "li",
+      "title": "a",
+      "link": "a@href",
+      "date": "span"
+    },
+    "_probe": {
+      "_sample_count": 15,
+      "_sample_title": "【新闻】【内含抽奖】S6新赛季《灵枢》正式上线！超多精彩一篇掌握",
+      "_sample_href": "/gicp/news/665/18786084.html"
+    }
+  },
+  {
+    "name": "异环",
+    "url": "https://yh.wanmei.com/news/index.html",
+    "html_size": 7265,
+    "status": "AUTO_OK",
+    "selectors": {
+      "item": "div.listNews",
+      "title": "a",
+      "link": "a@href",
+      "date": "a"
+    },
+    "_probe": {
+      "_sample_count": 3,
+      "_sample_title": "《云·异环》Android与iOS端正式上线 《云·异环》Android与iOS端正式上线！\n《云·异环》是《异环》云游",
+      "_sample_href": "/news/gamebroad/20260528/262416.html"
+    }
+  },
+  {
+    "name": "鸣潮",
+    "url": "https://wutheringwaves.kurogames.com/zh-cn/main/news/news",
+    "html_size": 8826,
+    "status": "NO_PATTERN"
+  },
+  {
+    "name": "地下城与勇士手游",
+    "url": "https://mdnf.qq.com/",
+    "html_size": 1027,
+    "status": "NO_PATTERN"
+  },
+  {
+    "name": "剑网3",
+    "url": "https://jx3.xoyo.com/announce/gg.html",
+    "html_size": 958,
+    "status": "NO_PATTERN"
+  },
+  {
+    "name": "新剑侠情缘手游",
+    "url": "https://jxqy.qq.com/webplat/info/news_version3/22500/22501/22502/m15192/list_n142.shtml",
+    "html_size": 10594,
+    "status": "NO_PATTERN"
+  },
+  {
+    "name": "天龙八部手游",
+    "url": "https://tlbb.qq.com/m/activity.shtml",
+    "html_size": 8189,
+    "status": "NO_PATTERN"
+  },
+  {
+    "name": "诛仙手游",
+    "url": "https://zx.wanmei.com/news/gamebroad/",
+    "html_size": 13372,
+    "status": "AUTO_OK",
+    "selectors": {
+      "item": "li",
+      "title": "a",
+      "link": "a@href",
+      "date": "a"
+    },
+    "_probe": {
+      "_sample_count": 23,
+      "_sample_title": "《诛仙》手游官方桌面版使用说明 2020-03-12",
+      "_sample_href": "/news/gamebroad/20200312/222655.shtml"
+    }
+  },
+  {
+    "name": "倩女幽魂手游",
+    "url": "https://qnm.163.com/",
+    "html_size": 44272,
+    "status": "NO_PATTERN"
+  },
+  {
+    "name": "网易一梦江湖",
+    "url": "https://jianghu.163.com/m/news/",
+    "html_size": 85813,
+    "status": "AUTO_OK",
+    "selectors": {
+      "item": "li.news",
+      "title": "a",
+      "link": "a@href",
+      "date": "span"
+    },
+    "_probe": {
+      "_sample_count": 360,
+      "_sample_title": "《一梦江湖》2026年丰穗节玩法概率公示",
+      "_sample_href": "//jianghu.163.com/2017/08/16/25597_706249.html"
+    }
+  },
+  {
+    "name": "网易梦幻西游手游",
+    "url": "https://my.163.com/news/weihu/",
+    "html_size": 44148,
+    "status": "AUTO_OK",
+    "selectors": {
+      "item": "li",
+      "title": "a",
+      "link": "a@href",
+      "date": "a"
+    },
+    "_probe": {
+      "_sample_count": 57,
+      "_sample_title": "日 月 2026年05月27日维护公告：海绵宝宝联动开启，十星地煞登场 亲爱的玩家朋友： 为保证服务器的运行稳定和服务质",
+      "_sample_href": "//my.163.com/news/weihu/20260526/18103_1301709.html"
+    }
+  },
+  {
+    "name": "大话西游手游",
+    "url": "https://dhxy.163.com/news/update/index.html",
+    "html_size": 21843,
+    "status": "AUTO_OK",
+    "selectors": {
+      "item": "li",
+      "title": "a",
+      "link": "a@href",
+      "date": "a"
+    },
+    "_probe": {
+      "_sample_count": 10,
+      "_sample_title": "交易服维护预览：御兽争锋 S3 全新赛季开启，师徒系统多项玩法体验优化 交易服维护预览：御兽争锋 S3 全新赛季开启，师",
+      "_sample_href": "https://dhxy.163.com/news/update/20260601/19975_1302444.html"
+    }
+  },
+  {
+    "name": "幻唐志逍遥外传",
+    "url": "https://htzsy.duoyi.com/news/",
+    "html_size": 54789,
+    "status": "NO_PATTERN"
+  },
+  {
+    "name": "魔兽世界",
+    "url": "https://www.wowchina.com/zh-cn/news/",
+    "html_size": 7912,
+    "status": "NO_PATTERN"
+  },
+  {
+    "name": "热血传奇手游",
+    "url": "https://cq.qq.com/web201706/news.shtml",
+    "html_size": 20942,
+    "status": "NO_PATTERN"
+  },
+  {
+    "name": "御龙在天手游",
+    "url": "https://ylzt.qq.com/",
+    "html_size": 5518,
+    "status": "NO_PATTERN"
+  },
+  {
+    "name": "原始征途手游",
+    "url": "https://yszt.ztgame.com/",
+    "html_size": 30461,
+    "status": "NO_PATTERN"
+  },
+  {
+    "name": "逆水寒",
+    "url": "http://n.163.com/index.html",
+    "html_size": 55183,
+    "status": "NO_PATTERN"
+  }
+]

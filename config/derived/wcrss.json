@@ -1,0 +1,191 @@
+{
+  "entries": [
+    {
+      "name": "原神",
+      "mp_id": "MP_WMTS_DF8FB4203C0D17CA",
+      "nickname": "原神",
+      "priority": "high"
+    },
+    {
+      "name": "王者荣耀世界",
+      "mp_id": "MP_WMTS_5B69D89A63147A9D",
+      "nickname": "王者荣耀世界",
+      "priority": "high"
+    },
+    {
+      "name": "燕云十六声",
+      "mp_id": "MP_WMTS_570C946ACA646EA9",
+      "nickname": "燕云十六声",
+      "priority": "high"
+    },
+    {
+      "name": "逆水寒手游",
+      "mp_id": "MP_WMTS_7C8008D0B77724AC",
+      "nickname": "逆水寒手游",
+      "priority": "high"
+    },
+    {
+      "name": "天涯明月刀手游",
+      "mp_id": "MP_WMTS_0FC68D8A546CD40C",
+      "nickname": "天涯明月刀手游",
+      "priority": "high"
+    },
+    {
+      "name": "异环",
+      "mp_id": "MP_WMTS_3F5D39DF0510E337",
+      "nickname": "异环",
+      "priority": "high"
+    },
+    {
+      "name": "鸣潮",
+      "mp_id": "MP_WMTS_F1278B15283D2BB9",
+      "nickname": "鸣潮",
+      "priority": "high"
+    },
+    {
+      "name": "地下城与勇士手游",
+      "mp_id": "MP_WMTS_9D6B5D6362C68B4C",
+      "nickname": "地下城与勇士手游",
+      "priority": "high"
+    },
+    {
+      "name": "剑网3",
+      "mp_id": "MP_WMTS_74D3B4EFCDA74871",
+      "nickname": "剑网3",
+      "priority": "normal"
+    },
+    {
+      "name": "新剑侠情缘手游",
+      "mp_id": "MP_WMTS_5BC714F9B55B3906",
+      "nickname": "新剑侠情缘手游",
+      "priority": "normal"
+    },
+    {
+      "name": "天龙八部手游",
+      "mp_id": "MP_WMTS_E94F5A7FDDC64A9B",
+      "nickname": "天龙八部手游",
+      "priority": "normal"
+    },
+    {
+      "name": "诛仙手游",
+      "mp_id": "MP_WMTS_3D4A43D6F643DB0C",
+      "nickname": "诛仙手游",
+      "priority": "normal"
+    },
+    {
+      "name": "倩女幽魂手游",
+      "mp_id": "MP_WMTS_610E9F443EF423D7",
+      "nickname": "倩女幽魂手游",
+      "priority": "normal"
+    },
+    {
+      "name": "网易一梦江湖",
+      "mp_id": "MP_WMTS_87D4ACAC68FCF795",
+      "nickname": "网易一梦江湖",
+      "priority": "normal"
+    },
+    {
+      "name": "网易梦幻西游手游",
+      "mp_id": "MP_WMTS_8B1568868385A1F5",
+      "nickname": "网易梦幻西游手游",
+      "priority": "normal"
+    },
+    {
+      "name": "大话西游手游",
+      "mp_id": "MP_WMTS_0565C76AD6C4C497",
+      "nickname": "大话西游手游",
+      "priority": "normal"
+    },
+    {
+      "name": "幻唐志逍遥外传",
+      "mp_id": "MP_WMTS_B4BF6141D7B07B22",
+      "nickname": "幻唐志逍遥外传",
+      "priority": "low"
+    },
+    {
+      "name": "魔兽世界",
+      "mp_id": "MP_WMTS_2579AE20EE993FDF",
+      "nickname": "魔兽世界",
+      "priority": "low"
+    },
+    {
+      "name": "热血传奇手游",
+      "mp_id": "MP_WMTS_4D7D06BC4F0D7C2C",
+      "nickname": "热血传奇手游",
+      "priority": "low"
+    },
+    {
+      "name": "御龙在天手游",
+      "mp_id": "MP_WMTS_5E8B873FCF406B0F",
+      "nickname": "御龙在天手游",
+      "priority": "low"
+    },
+    {
+      "name": "原始征途手游",
+      "mp_id": "MP_WMTS_BA07B3B89265AE27",
+      "nickname": "原始征途手游",
+      "priority": "low"
+    },
+    {
+      "name": "逆水寒",
+      "mp_id": "MP_WMTS_AA608254BE9F126E",
+      "nickname": "逆水寒",
+      "priority": "low"
+    },
+    {
+      "name": "三国志战略版官方",
+      "mp_id": "MP_WMTS_7642B00DAA3FC94F",
+      "nickname": "三国志战略版官方",
+      "priority": "high"
+    },
+    {
+      "name": "率土之滨手游",
+      "mp_id": "MP_WMTS_AF4F849506A1A4FD",
+      "nickname": "率土之滨手游",
+      "priority": "high"
+    },
+    {
+      "name": "万国觉醒",
+      "mp_id": "MP_WMTS_797C34099E9E65B8",
+      "nickname": "万国觉醒",
+      "priority": "high"
+    },
+    {
+      "name": "问道手游",
+      "mp_id": "MP_WMTS_AF10A6984A8D2E5D",
+      "nickname": "问道手游",
+      "priority": "normal"
+    },
+    {
+      "name": "三国志幻想大陆",
+      "mp_id": "MP_WMTS_AA1D75679E54B631",
+      "nickname": "三国志幻想大陆",
+      "priority": "normal"
+    },
+    {
+      "name": "王国纪元",
+      "mp_id": "MP_WMTS_F509C2DFF404A58D",
+      "nickname": "王国纪元",
+      "priority": "normal"
+    },
+    {
+      "name": "游族少年三国志",
+      "mp_id": "MP_WMTS_90AF9F3DC7C258C1",
+      "nickname": "游族少年三国志",
+      "priority": "low"
+    },
+    {
+      "name": "GameLook",
+      "mp_id": "MP_WMTS_A9AA921BA7E36FEF",
+      "nickname": "GameLook",
+      "priority": "normal"
+    },
+    {
+      "name": "完美世界官方手游",
+      "mp_id": "MP_WMTS_1F4ED0A9957EDDCE",
+      "nickname": "完美世界官方手游",
+      "priority": "normal"
+    }
+  ],
+  "missing": []
+}

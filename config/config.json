@@ -1,0 +1,17 @@
+{
+  "_comment": "敏感配置！请勿提交到任何代码仓库。部署到公司 WorkBuddy 时优先读环境变量 WCRSS_FEED_URL。",
+
+  "wcrss_feed_url": "https://wechatrss.waytomaster.com/api/rss/all?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMTg0IiwidHlwZSI6InJzcyJ9.WMSZjdEAtbRekgxUhNlnmbAgvNF5xeANxij_K2bUWwk",
+
+  "fetch_defaults": {
+    "recent_days": 3,
+    "num": 50
+  },
+  "report_defaults": {
+    "timezone": "Asia/Shanghai",
+    "max_articles_per_source": 20
+  },
+
+  "_deprecated_wcrss_api_key": "RK_mppbm7h4_4w2y73672h3s3l2i5o4q6w4l (old wcrss.com, stopped producing articles 2026-05-29)",
+  "_deprecated_wcrss_endpoint": "https://api.wcrss.com"
+}

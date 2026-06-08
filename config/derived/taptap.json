@@ -1,0 +1,178 @@
+{
+  "entries": [
+    {
+      "name": "原神",
+      "app_id": 168332,
+      "priority": "high",
+      "match_title": "原神"
+    },
+    {
+      "name": "王者荣耀世界",
+      "app_id": 744415,
+      "priority": "high",
+      "match_title": "王者荣耀世界"
+    },
+    {
+      "name": "燕云十六声",
+      "app_id": 239372,
+      "priority": "high",
+      "match_title": "燕云十六声"
+    },
+    {
+      "name": "逆水寒手游",
+      "app_id": 239222,
+      "priority": "high",
+      "match_title": "逆水寒"
+    },
+    {
+      "name": "天涯明月刀手游",
+      "app_id": 130630,
+      "priority": "high",
+      "match_title": "天涯明月刀·世界"
+    },
+    {
+      "name": "异环",
+      "app_id": 714119,
+      "priority": "high",
+      "match_title": "异环"
+    },
+    {
+      "name": "鸣潮",
+      "app_id": 236770,
+      "priority": "high",
+      "match_title": "鸣潮"
+    },
+    {
+      "name": "地下城与勇士手游",
+      "app_id": null,
+      "priority": "high",
+      "_hint": "打开 https://www.taptap.cn/search/%E5%9C%B0%E4%B8%8B%E5%9F%8E%E4%B8%8E%E5%8B%87%E5%A3%AB%E6%89%8B%E6%B8%B8 ，点进游戏详情页，URL 末段数字就是 app_id"
+    },
+    {
+      "name": "剑网3",
+      "app_id": 382756,
+      "priority": "normal",
+      "match_title": "剑网3无界"
+    },
+    {
+      "name": "新剑侠情缘手游",
+      "app_id": 7101,
+      "priority": "normal",
+      "match_title": "新剑侠情缘"
+    },
+    {
+      "name": "天龙八部手游",
+      "app_id": 215538,
+      "priority": "normal",
+      "match_title": "新天龙八部"
+    },
+    {
+      "name": "诛仙手游",
+      "app_id": 337150,
+      "priority": "normal",
+      "match_title": "诛仙2"
+    },
+    {
+      "name": "倩女幽魂手游",
+      "app_id": 6928,
+      "priority": "normal",
+      "match_title": "倩女幽魂"
+    },
+    {
+      "name": "网易一梦江湖",
+      "app_id": 50500,
+      "priority": "normal",
+      "match_title": "一梦江湖"
+    },
+    {
+      "name": "网易梦幻西游手游",
+      "app_id": null,
+      "priority": "normal",
+      "_hint": "打开 https://www.taptap.cn/search/%E7%BD%91%E6%98%93%E6%A2%A6%E5%B9%BB%E8%A5%BF%E6%B8%B8%E6%89%8B%E6%B8%B8 ，点进游戏详情页，URL 末段数字就是 app_id"
+    },
+    {
+      "name": "大话西游手游",
+      "app_id": null,
+      "priority": "normal",
+      "_hint": "打开 https://www.taptap.cn/search/%E5%A4%A7%E8%AF%9D%E8%A5%BF%E6%B8%B8%E6%89%8B%E6%B8%B8 ，点进游戏详情页，URL 末段数字就是 app_id"
+    },
+    {
+      "name": "幻唐志逍遥外传",
+      "app_id": null,
+      "priority": "low",
+      "_hint": "打开 https://www.taptap.cn/search/%E5%B9%BB%E5%94%90%E5%BF%97%E9%80%8D%E9%81%A5%E5%A4%96%E4%BC%A0 ，点进游戏详情页，URL 末段数字就是 app_id"
+    },
+    {
+      "name": "魔兽世界",
+      "app_id": null,
+      "priority": "low",
+      "_hint": "打开 https://www.taptap.cn/search/%E9%AD%94%E5%85%BD%E4%B8%96%E7%95%8C ，点进游戏详情页，URL 末段数字就是 app_id"
+    },
+    {
+      "name": "热血传奇手游",
+      "app_id": 2307,
+      "priority": "low",
+      "match_title": "热血传奇"
+    },
+    {
+      "name": "御龙在天手游",
+      "app_id": 17910,
+      "priority": "low",
+      "match_title": "御龙在天"
+    },
+    {
+      "name": "原始征途手游",
+      "app_id": 236626,
+      "priority": "low",
+      "match_title": "原始征途"
+    },
+    {
+      "name": "逆水寒",
+      "app_id": null,
+      "priority": "low",
+      "_hint": "打开 https://www.taptap.cn/search/%E9%80%86%E6%B0%B4%E5%AF%92 ，点进游戏详情页，URL 末段数字就是 app_id"
+    },
+    {
+      "name": "三国志战略版官方",
+      "app_id": null,
+      "priority": "high",
+      "_hint": "打开 https://www.taptap.cn/search/%E4%B8%89%E5%9B%BD%E5%BF%97%E6%88%98%E7%95%A5%E7%89%88%E5%AE%98%E6%96%B9 ，点进游戏详情页，URL 末段数字就是 app_id"
+    },
+    {
+      "name": "率土之滨手游",
+      "app_id": null,
+      "priority": "high",
+      "_hint": "打开 https://www.taptap.cn/search/%E7%8E%87%E5%9C%9F%E4%B9%8B%E6%BB%A8%E6%89%8B%E6%B8%B8 ，点进游戏详情页，URL 末段数字就是 app_id"
+    },
+    {
+      "name": "万国觉醒",
+      "app_id": null,
+      "priority": "high",
+      "_hint": "打开 https://www.taptap.cn/search/%E4%B8%87%E5%9B%BD%E8%A7%89%E9%86%92 ，点进游戏详情页，URL 末段数字就是 app_id"
+    },
+    {
+      "name": "问道手游",
+      "app_id": null,
+      "priority": "normal",
+      "_hint": "打开 https://www.taptap.cn/search/%E9%97%AE%E9%81%93%E6%89%8B%E6%B8%B8 ，点进游戏详情页，URL 末段数字就是 app_id"
+    },
+    {
+      "name": "三国志幻想大陆",
+      "app_id": null,
+      "priority": "normal",
+      "_hint": "打开 https://www.taptap.cn/search/%E4%B8%89%E5%9B%BD%E5%BF%97%E5%B9%BB%E6%83%B3%E5%A4%A7%E9%99%86 ，点进游戏详情页，URL 末段数字就是 app_id"
+    },
+    {
+      "name": "王国纪元",
+      "app_id": null,
+      "priority": "normal",
+      "_hint": "打开 https://www.taptap.cn/search/%E7%8E%8B%E5%9B%BD%E7%BA%AA%E5%85%83 ，点进游戏详情页，URL 末段数字就是 app_id"
+    },
+    {
+      "name": "游族少年三国志",
+      "app_id": null,
+      "priority": "low",
+      "_hint": "打开 https://www.taptap.cn/search/%E6%B8%B8%E6%97%8F%E5%B0%91%E5%B9%B4%E4%B8%89%E5%9B%BD%E5%BF%97 ，点进游戏详情页，URL 末段数字就是 app_id"
+    }
+  ]
+}

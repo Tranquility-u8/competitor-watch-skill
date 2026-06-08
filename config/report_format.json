@@ -1,0 +1,59 @@
+{
+  "_doc": "竞品报告输出格式配置。可手动编辑——增删分类、调长度、改警告文案，agent 跑 report.py / publish.py 时即时生效。",
+
+  "content_tags": {
+    "_doc": "把文章按内容类型打标签：标题或描述命中任一关键词即归该类。多类可重叠。顺序决定摘要表里的排列优先（按数量再排名）。可自由增删类与关键词。",
+    "新版本":   ["版本", "上线", "更新", "公测", "测试", "首测", "二测", "前瞻", "新版", "资料片", "新章"],
+    "新内容":   ["新地图", "新副本", "新职业", "新角色", "新英雄", "新玩法", "新系统", "新外观", "新时装", "新boss", "新BOSS", "新关卡", "新剧情", "新章节", "联动"],
+    "活动运营": ["活动", "礼包", "签到", "兑换", "限时", "节日", "周年", "庆典", "返场", "回归", "充值", "首充"],
+    "赛季排位": ["赛季", "段位", "排行榜", "PVP", "竞技", "决斗", "天梯", "战令", "通行证"],
+    "付费抽卡": ["抽卡", "卡池", "保底", "氪金"],
+    "社交系统": ["好友", "公会", "帮派", "门派", "结义", "情缘", "结婚", "组队", "社交"],
+    "玩家口碑": ["吐槽", "差评", "好评", "退坑", "策划", "运营"],
+    "行业动态": ["流水", "下载", "畅销榜", "买量", "投放", "厂商", "发行", "Sensor Tower", "Data.ai"]
+  },
+
+  "source_labels": {
+    "_doc": "数据源在报告里的中文显示名（也决定分组顺序：wechat→official→hykb→taptap）",
+    "wechat":   "微信公众号",
+    "official": "官方论坛/官网",
+    "hykb":     "好游快爆",
+    "taptap":   "TapTap 评论"
+  },
+
+  "limits": {
+    "_doc": "各类长度截断",
+    "summary_titles_per_competitor": 8,
+    "summary_description_chars": 80,
+    "raw_description_chars": 160,
+    "competitor_top_tags": 3
+  },
+
+  "section_order": {
+    "_doc": "报告主章节渲染顺序（已实现：overview/summary/raw）。修改顺序即可改版式。",
+    "default": ["overview", "summary", "raw"]
+  },
+
+  "section_titles": {
+    "overview": "## 概览",
+    "summary":  "## 摘要",
+    "raw":      "## 📆 {kind_zh} 原文清单（按 publish_time 严格过滤）"
+  },
+
+  "kind_titles": {
+    "_doc": "报告大标题前缀",
+    "daily":   "竞品日报",
+    "weekly":  "竞品周报",
+    "monthly": "竞品月报",
+    "yearly":  "竞品年报"
+  },
+
+  "dirty_marker": {
+    "_doc": "anchor == 今天 (CST) 时，报告视为'当日不完整'。文件头插入可见警告，文件末插入机器可读 marker；catch-up 扫到 marker 即自动 force 重生成 + 重发。",
+    "header_template": "> ⚠️ **当日日报 · 内容不完整**（最后刷新：{render_time} CST）\n>\n> 今日尚未结束，部分公众号 / 评论可能稍后才发布。\n> 每个工作日 12:00 跑 catch-up 时会自动重新整合并去除此标记。",
+    "marker_html": "<!-- competitor-watch-status: dirty -->",
+    "marker_regex": "competitor-watch-status:\\s*dirty"
+  },
+
+  "empty_message": "> 本期暂无符合 `publish_time` 区间的文章。\n> （这是正常情况：可能该日真的没有发布；也可能数据源还在抓取中，下次 catch-up 会自动补齐。）"
+}

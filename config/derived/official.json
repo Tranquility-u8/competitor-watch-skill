@@ -1,0 +1,260 @@
+{
+  "_doc": "官方网站公告/新闻页配置（v3.8 + v3.9 增量）。",
+  "_strategy": "7 站已配 selectors（一梦江湖/王者荣耀世界/诛仙/天涯明月刀/异环/梦幻西游/大话西游），15 站 SPA/反爬 → snapshot 兜底。",
+  "_probe_status": {
+    "auto_ok": [
+      "王者荣耀世界",
+      "天涯明月刀手游",
+      "异环",
+      "诛仙手游",
+      "网易一梦江湖",
+      "网易梦幻西游手游",
+      "大话西游手游"
+    ],
+    "snapshot_only": [
+      "原神",
+      "燕云十六声",
+      "逆水寒手游",
+      "鸣潮",
+      "地下城与勇士手游",
+      "剑网3",
+      "新剑侠情缘手游",
+      "天龙八部手游",
+      "倩女幽魂手游",
+      "幻唐志逍遥外传",
+      "魔兽世界",
+      "热血传奇手游",
+      "御龙在天手游",
+      "原始征途手游",
+      "逆水寒"
+    ]
+  },
+  "entries": [
+    {
+      "name": "原神",
+      "priority": "high",
+      "url": "https://ys.mihoyo.com/main/news/list?type=2",
+      "_note": "米哈游官网 SPA，正文 JS 渲染，static fetch 无列表 → snapshot 兜底"
+    },
+    {
+      "name": "王者荣耀世界",
+      "priority": "high",
+      "url": "https://world.qq.com/gicp/news/1191/0/7091/2.html",
+      "selectors": {
+        "item": "a.slide_cont",
+        "title": "",
+        "link": "@href",
+        "date": "span.time"
+      },
+      "_note": "腾讯王者荣耀世界资讯活动中心 — item 自身即 <a>，date 在 span.time"
+    },
+    {
+      "name": "燕云十六声",
+      "priority": "high",
+      "url": "https://www.yysls.cn/news/",
+      "_note": "网易燕云十六声新闻资讯页 — 静态 HTML 无识别日期 → snapshot"
+    },
+    {
+      "name": "逆水寒手游",
+      "priority": "high",
+      "url": "https://h.163.com/news/update/index.html",
+      "_note": "网易逆水寒手游公告页 — SPA → snapshot"
+    },
+    {
+      "name": "天涯明月刀手游",
+      "priority": "high",
+      "url": "https://ty.qq.com/gicp/news/666/2/13167/2.html",
+      "selectors": {
+        "item": "li",
+        "title": "a",
+        "link": "a@href",
+        "date": "span"
+      },
+      "_note": "腾讯天涯明月刀·世界 江湖快报 — 自动探针 OK"
+    },
+    {
+      "name": "异环",
+      "priority": "high",
+      "url": "https://yh.wanmei.com/news/index.html",
+      "selectors": {
+        "item": "div.listNews > a",
+        "title": "",
+        "link": "@href",
+        "date": ""
+      },
+      "_note": "完美世界异环综合新闻 — item 自身即 <a>，无独立日期容器（fallback regex 抽取）"
+    },
+    {
+      "name": "鸣潮",
+      "priority": "high",
+      "url": "https://wutheringwaves.kurogames.com/zh-cn/main/news/news",
+      "_note": "库洛鸣潮 SPA → snapshot"
+    },
+    {
+      "name": "地下城与勇士手游",
+      "url": "https://mdnf.qq.com/",
+      "priority": "high",
+      "_note": "腾讯 DNF 手游官网首页 SPA（仅 1KB 静态外壳），列表 JS 渲染 → snapshot 兜底"
+    },
+    {
+      "name": "剑网3",
+      "priority": "normal",
+      "url": "https://jx3.xoyo.com/announce/gg.html",
+      "_note": "西山居剑网3 — 静态 HTML 仅 958 字节疑似反爬 → snapshot"
+    },
+    {
+      "name": "新剑侠情缘手游",
+      "priority": "normal",
+      "url": "https://jxqy.qq.com/webplat/info/news_version3/22500/22501/22502/m15192/list_n142.shtml",
+      "_note": "腾讯新剑侠情缘新闻中心 — 静态 HTML 无识别日期 → snapshot"
+    },
+    {
+      "name": "天龙八部手游",
+      "priority": "normal",
+      "url": "https://tlbb.qq.com/m/activity.shtml",
+      "_note": "腾讯新天龙八部 — SPA → snapshot"
+    },
+    {
+      "name": "诛仙手游",
+      "priority": "normal",
+      "url": "https://zx.wanmei.com/news/gamebroad/",
+      "selectors": {
+        "item": "li",
+        "title": "a",
+        "link": "a@href",
+        "date": "a",
+        "require_date": true
+      },
+      "_note": "完美世界诛仙手游公告页 — require_date 剔除 nav 的最新/新闻/公告 li"
+    },
+    {
+      "name": "倩女幽魂手游",
+      "priority": "normal",
+      "url": "https://qnm.163.com/",
+      "_note": "网易倩女幽魂手游官网首页 — 静态 HTML 无识别日期 → snapshot"
+    },
+    {
+      "name": "网易一梦江湖",
+      "priority": "normal",
+      "url": "https://jianghu.163.com/m/news/",
+      "selectors": {
+        "item": "li.news",
+        "title": "a",
+        "link": "a@href",
+        "date": "span"
+      },
+      "_note": "网易一梦江湖（楚留香）新闻资讯 — 自动探针 OK，含 360 条样本"
+    },
+    {
+      "name": "网易梦幻西游手游",
+      "url": "https://my.163.com/news/weihu/",
+      "priority": "normal",
+      "selectors": {
+        "item": "li",
+        "title": "a",
+        "link": "a@href",
+        "date": "a",
+        "require_date": true
+      },
+      "_note": "网易梦幻西游 维护公告列表（按时间倒序）— 自动探针 OK，require_date 剔除 nav"
+    },
+    {
+      "name": "大话西游手游",
+      "url": "https://dhxy.163.com/news/update/index.html",
+      "priority": "normal",
+      "selectors": {
+        "item": "li",
+        "title": "a",
+        "link": "a@href",
+        "date": "a",
+        "require_date": true
+      },
+      "_note": "网易大话西游手游 维护公告列表 — 自动探针 OK，require_date 剔除 nav"
+    },
+    {
+      "name": "幻唐志逍遥外传",
+      "url": "https://htzsy.duoyi.com/news/",
+      "priority": "low",
+      "_note": "多益网络幻唐志:逍遥外传 新闻资讯中心（注：多益不是完美世界）—— 待 probe 验证 selectors"
+    },
+    {
+      "name": "魔兽世界",
+      "priority": "low",
+      "url": "https://www.wowchina.com/zh-cn/news/",
+      "_note": "网易魔兽世界国服 — SPA → snapshot"
+    },
+    {
+      "name": "热血传奇手游",
+      "priority": "low",
+      "url": "https://cq.qq.com/web201706/news.shtml",
+      "_note": "腾讯热血传奇 — 静态 HTML 无识别日期 → snapshot"
+    },
+    {
+      "name": "御龙在天手游",
+      "priority": "low",
+      "url": "https://ylzt.qq.com/",
+      "_note": "腾讯御龙在天 — 单页 → snapshot"
+    },
+    {
+      "name": "原始征途手游",
+      "priority": "low",
+      "url": "https://yszt.ztgame.com/",
+      "_note": "巨人网络原始征途 — 静态 HTML 仅含旧版本日期 → snapshot"
+    },
+    {
+      "name": "逆水寒",
+      "priority": "low",
+      "url": "http://n.163.com/index.html",
+      "_note": "网易逆水寒端游官网 — 首页 → snapshot"
+    },
+    {
+      "name": "三国志战略版官方",
+      "url": "",
+      "priority": "high",
+      "mode": "snapshot",
+      "_hint": "把官网 / 官方公告页 URL 填到 url 字段；如果站点有 rss 字段或 selectors，加上即可（参考 SKILL.md）"
+    },
+    {
+      "name": "率土之滨手游",
+      "url": "",
+      "priority": "high",
+      "mode": "snapshot",
+      "_hint": "把官网 / 官方公告页 URL 填到 url 字段；如果站点有 rss 字段或 selectors，加上即可（参考 SKILL.md）"
+    },
+    {
+      "name": "万国觉醒",
+      "url": "",
+      "priority": "high",
+      "mode": "snapshot",
+      "_hint": "把官网 / 官方公告页 URL 填到 url 字段；如果站点有 rss 字段或 selectors，加上即可（参考 SKILL.md）"
+    },
+    {
+      "name": "问道手游",
+      "url": "",
+      "priority": "normal",
+      "mode": "snapshot",
+      "_hint": "把官网 / 官方公告页 URL 填到 url 字段；如果站点有 rss 字段或 selectors，加上即可（参考 SKILL.md）"
+    },
+    {
+      "name": "三国志幻想大陆",
+      "url": "",
+      "priority": "normal",
+      "mode": "snapshot",
+      "_hint": "把官网 / 官方公告页 URL 填到 url 字段；如果站点有 rss 字段或 selectors，加上即可（参考 SKILL.md）"
+    },
+    {
+      "name": "王国纪元",
+      "url": "",
+      "priority": "normal",
+      "mode": "snapshot",
+      "_hint": "把官网 / 官方公告页 URL 填到 url 字段；如果站点有 rss 字段或 selectors，加上即可（参考 SKILL.md）"
+    },
+    {
+      "name": "游族少年三国志",
+      "url": "",
+      "priority": "low",
+      "mode": "snapshot",
+      "_hint": "把官网 / 官方公告页 URL 填到 url 字段；如果站点有 rss 字段或 selectors，加上即可（参考 SKILL.md）"
+    }
+  ]
+}
