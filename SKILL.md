@@ -42,7 +42,7 @@ notepad config/games.json
 python scripts/resolve.py
 
 # 3. 如果 resolve 提示 "Subscription Plan: 需要订阅 X"，agent 应询问用户是否同意，
-#    用户同意后再去 wcrss.com/publishers 添加订阅，下次 resolve 自动同步 mp_id
+#    用户同意后再去 RSS 服务的 publishers 页面添加订阅，下次 resolve 自动同步 mp_id
 
 # 4. 如果 derived/taptap.json 里 app_id 为空，按 _hint 链接补上
 ```
@@ -182,7 +182,7 @@ python scripts/publish.py daily --no-wecom            # 跳过企微推送
 ```
 你是 MMO 竞品分析师。下面是 {start}~{end} 期间，{N} 个竞品的 {M} 条信息（含微信文章/TapTap 评论/官方公告/评分快照）。
 请输出：
-1. TOP 5 重点事件（含竞品名、事件类型、对我们 Y5 项目可能的影响）
+1. TOP 5 重点事件（含竞品名、事件类型、对自家产品可能的影响）
 2. 评分趋势观察（哪些竞品评分变好/变坏 + 原因猜测）
 3. 玩家口碑关键词（从 TapTap 1-2 星评论里提）
 4. 每个竞品 1 句话总结

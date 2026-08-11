@@ -1,7 +1,7 @@
 """Multi-source ingest dispatcher for competitor-watch.
 
 Sources:
-  - wechat   (wcrss.com)
+  - wechat   (configurable RSS service)
   - taptap   (TapTap web open APIs)
   - hykb     (好游快爆 3839.com HTML scrape)
   - official (官网/官方论坛, 配置文件驱动: RSS 优先, HTML fallback)

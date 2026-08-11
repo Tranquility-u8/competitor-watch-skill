@@ -1,8 +1,8 @@
 """WeChat RSS client.
 
-Now points to wechatrss.waytomaster.com (a single aggregated RSS endpoint that
-includes ALL of the user's subscriptions). The previous wcrss.com sapi/articles
-endpoint stopped producing articles in late May 2026 and is treated as dead.
+Points to a configurable aggregated RSS endpoint that includes ALL of the
+user's subscriptions. Set via config/config.json → wcrss_feed_url or
+env WCRSS_FEED_URL. The previous sapi/articles endpoint is deprecated.
 
 Output shape stays the same as before so the rest of the skill (db.py /
 sources/wechat.py / report.py) does not need to change:
