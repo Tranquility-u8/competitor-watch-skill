@@ -1,0 +1,19 @@
+{
+  "_comment": "顶层游戏列表。这是你唯一需要维护的文件。增删一个游戏/行业号 = 在 games 数组里加一行。Agent 会基于这份列表，自动维护 derived/ 目录下的各源配置。",
+
+  "_schema": {
+    "name": "中文显示名（必填，唯一）",
+    "type": "可选 game|industry，默认 game。industry 表示行业聚合号（不会去 TapTap/好游快爆 抓评分）",
+    "aliases": "可选，搜索别名/英文名/简称，便于自动定位",
+    "is_self": "可选 true，表示自家产品（默认 false）",
+    "priority": "可选 high|normal|low，影响日报排序与抓取并发",
+    "genre": "可选，游戏品类标签（如 mmo/slg/card/idle/casual），用于品类画像匹配",
+    "notes": "备注"
+  },
+
+  "games": [
+    { "name": "示例游戏A", "aliases": ["GameA"], "priority": "high", "genre": "mmo" },
+    { "name": "示例游戏B", "aliases": ["GameB"], "priority": "high", "genre": "slg" },
+    { "name": "示例行业号", "type": "industry", "priority": "normal" }
+  ]
+}

@@ -10,8 +10,5 @@
   "report_defaults": {
     "timezone": "Asia/Shanghai",
     "max_articles_per_source": 20
-  },
-
-  "_deprecated_wcrss_api_key": "",
-  "_deprecated_wcrss_endpoint": ""
+  }
 }

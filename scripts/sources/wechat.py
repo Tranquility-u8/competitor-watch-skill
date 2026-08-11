@@ -1,4 +1,4 @@
-"""WeChat 公众号 source — wraps wcrss.com /sapi/articles."""
+"""WeChat 公众号 source — wraps configurable RSS service."""
 from __future__ import annotations
 
 import sys

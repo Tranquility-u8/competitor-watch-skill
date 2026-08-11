@@ -264,7 +264,7 @@ def main() -> int:
         print("[wcrss] === Subscription Plan (NEEDS USER CONFIRMATION) ===")
         for g in wcrss_missing:
             print(f"  + 需要订阅公众号: {g['name']}（aliases: {g.get('aliases', [])}）")
-        print("    → 请在 wcrss.com/publishers 后台手动添加，或回复 agent 让其引导。\n")
+        print("    → 请在 RSS 服务后台手动添加订阅，或回复 agent 让其引导。\n")
 
     # 2) hykb — 只对 type=game 走，行业号没有评分
     hykb_resolved = resolve_hykb(games_only)
@@ -319,7 +319,7 @@ def main() -> int:
     print("\n[done] derived configs ready. Run `python scripts/ingest.py` to fetch.")
     if wcrss_missing:
         print(f"\n⚠️  {len(wcrss_missing)} 个游戏的微信公众号尚未订阅（见上方 Subscription Plan），")
-        print("   是否需要我引导你去 wcrss.com 添加？请明确回复同意/不同意。")
+        print("   是否需要我引导你添加订阅？请明确回复同意/不同意。")
     return 0
 
 
