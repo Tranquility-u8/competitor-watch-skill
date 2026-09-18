@@ -20,7 +20,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 if sys.platform == "win32":
@@ -30,6 +30,7 @@ if sys.platform == "win32":
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
+import config_loader  # noqa: E402
 from db import (  # noqa: E402
     connect,
     query_all_articles,
@@ -38,11 +39,17 @@ from db import (  # noqa: E402
 )
 
 DB_PATH = ROOT / "data" / "articles.db"
-SCORING_CONFIG = ROOT / "config" / "scoring.json"
 
 
 def load_config() -> dict:
-    return json.loads(SCORING_CONFIG.read_text(encoding="utf-8"))
+    """Scoring section of the unified config (config/competitor-watch.json)."""
+    return config_loader.load_scoring()
+
+
+def _tier_order(cfg: dict) -> list[str]:
+    """Tier names sorted best-first (by min threshold desc). Fully config-driven."""
+    tiers = cfg.get("tiers", {})
+    return [name for name, _ in sorted(tiers.items(), key=lambda kv: -float(kv[1].get("min", 0)))]
 
 
 def _hit(text: str, keywords: list[str]) -> list[str]:
@@ -100,16 +107,16 @@ def score_article(article: dict, cfg: dict, industry_set: set[str]) -> dict:
 
     weighted_total = round(weighted_total, 2)
 
-    # 分层
-    tier = "D"
-    for t in ("S", "A", "B", "C", "D"):
+    # 分层（档位与顺序完全由配置决定，best-first）
+    tier = _tier_order(cfg)[-1] if _tier_order(cfg) else "?"
+    for t in _tier_order(cfg):
         if weighted_total >= float(cfg["tiers"][t]["min"]):
             tier = t
             break
 
     return {
         "v": "1.0",
-        "scored_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "scored_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "total": weighted_total,
         "tier": tier,
         "tier_label": cfg["tiers"][tier]["label"],
@@ -119,9 +126,7 @@ def score_article(article: dict, cfg: dict, industry_set: set[str]) -> dict:
 
 
 def load_industry_set() -> set[str]:
-    games_path = ROOT / "config" / "games.json"
-    doc = json.loads(games_path.read_text(encoding="utf-8"))
-    return {g["name"] for g in doc.get("games", []) if g.get("type") == "industry"}
+    return {g["name"] for g in config_loader.load_games() if g.get("type") == "industry"}
 
 
 def main() -> int:
@@ -157,12 +162,13 @@ def main() -> int:
             print("[score] nothing to do")
             return 0
 
-        tier_counts = {"S": 0, "A": 0, "B": 0, "C": 0, "D": 0}
+        tier_names = _tier_order(cfg)
+        tier_counts = {t: 0 for t in tier_names}
         n_written = 0
         for r in rows:
             article = dict(r)
             res = score_article(article, cfg, industry_set)
-            tier_counts[res["tier"]] += 1
+            tier_counts[res["tier"]] = tier_counts.get(res["tier"], 0) + 1
             if not args.dry_run:
                 update_article_score(conn, article["hash"], json.dumps(res, ensure_ascii=False))
                 n_written += 1
@@ -172,12 +178,12 @@ def main() -> int:
 
         print(f"\n[score] done. written={n_written}  dry_run={args.dry_run}")
         print(f"[score] tier dist: " +
-              "  ".join(f"{t}={tier_counts[t]}" for t in ("S", "A", "B", "C", "D")))
+              "  ".join(f"{t}={tier_counts.get(t, 0)}" for t in tier_names))
         total = sum(tier_counts.values())
         if total:
-            for t in ("S", "A", "B", "C", "D"):
-                pct = tier_counts[t] / total * 100
-                print(f"   {t}: {tier_counts[t]:>4}  ({pct:>5.1f}%)")
+            for t in tier_names:
+                pct = tier_counts.get(t, 0) / total * 100
+                print(f"   {t}: {tier_counts.get(t, 0):>4}  ({pct:>5.1f}%)")
     return 0
 
 

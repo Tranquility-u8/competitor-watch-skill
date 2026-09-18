@@ -1,8 +1,8 @@
 """WeChat RSS client.
 
 Points to a configurable aggregated RSS endpoint that includes ALL of the
-user's subscriptions. Set via config/config.json → wcrss_feed_url or
-env WCRSS_FEED_URL. The previous sapi/articles endpoint is deprecated.
+user's subscriptions. Set via the unified config (config/competitor-watch.json
+→ sources.wcrss.feed_url) or env WCRSS_FEED_URL.
 
 Output shape stays the same as before so the rest of the skill (db.py /
 sources/wechat.py / report.py) does not need to change:
@@ -18,6 +18,7 @@ import hashlib
 import json
 import os
 import re
+import sys
 import xml.etree.ElementTree as ET
 from email.utils import parsedate_to_datetime
 from pathlib import Path
@@ -25,16 +26,15 @@ from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-CONFIG_PATH = Path(__file__).resolve().parent.parent / "config" / "config.json"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import config_loader  # noqa: E402
 
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 
 
 def load_config() -> dict[str, Any]:
-    if not CONFIG_PATH.exists():
-        raise FileNotFoundError(f"config not found: {CONFIG_PATH}")
-    with CONFIG_PATH.open("r", encoding="utf-8") as f:
-        return json.load(f)
+    return config_loader.load_sources_flat()
 
 
 def _resolve_feed_url(cfg: dict[str, Any]) -> str:
@@ -43,10 +43,11 @@ def _resolve_feed_url(cfg: dict[str, Any]) -> str:
     if env:
         return env.strip()
     url = (cfg.get("wcrss_feed_url") or "").strip()
-    if not url or url.startswith("<"):
+    if not url or url.startswith("<") or "YOUR_TOKEN" in url:
         raise RuntimeError(
             "WCRSS_FEED_URL not configured. "
-            "Set env WCRSS_FEED_URL or fill 'wcrss_feed_url' in config/config.json"
+            "Set env WCRSS_FEED_URL or fill 'sources.wcrss.feed_url' "
+            "in config/competitor-watch.json"
         )
     return url
 

@@ -1,396 +1,253 @@
 ---
 name: competitor-watch
-description: 游戏竞品自动化监测。当用户要求"拉取竞品文章/公众号更新/评分/玩家口碑"、"看今日竞品动态"、"生成竞品日报/周报/月报/年报"、"添加竞品/新增游戏"、"竞品监测"等时触发。架构：用户只维护一份 games.json 顶层游戏列表，agent 自动派生 wcrss/hykb/taptap/official 的 derived 配置。多渠道：微信公众号（wcrss）+ TapTap 评论评分 + 好游快爆评分公告 + 官网/官方论坛。SQLite 去重持久化，Markdown 日/周/月/年报。支持多品类（MMO/SLG/卡牌/RPG 等），通过 games.json 的 genre 字段区分。
+description: 游戏竞品自动化监测。当用户要求"拉取竞品文章/公众号更新/评分/玩家口碑"、"看今日竞品动态"、"生成竞品日报/周报/月报/年报"、"添加竞品/新增游戏"、"竞品监测"等时触发。多渠道采集（微信公众号 RSS + TapTap + 好游快爆 + 官网论坛）、9 维度规则评分、Markdown 报告、可发布腾讯文档/企微。单一 JSON 配置文件，纯 Python 标准库，支持任意品类（MMO/SLG/卡牌等）。
 agent_created: true
 ---
 
 # Competitor Watch — 游戏竞品监测 Skill
 
-> **面向 Agent 的操作手册**。本文件定义了 agent 在执行竞品监测任务时的全部流程、命令和规则。
+> **本文件是 Agent 的操作手册**：定义执行竞品监测任务时的全部流程、命令和规则。
+> 面向人类的图文手册在 `config-wizard.html`（浏览器打开，第一个页签即用户手册）——两者内容保持一致。
 
 ---
 
-## 一、快速参考
+## 一、概述
 
-### 用户一句话，Agent 做什么？
+**做什么**：用户在一份 JSON 里维护竞品游戏列表，本 skill 自动从 4 个渠道采集动态、按可配置的多维度规则打分、生成日/周/月/年报，并可推送到腾讯文档 / 企业微信。
 
-| 用户说 | Agent 执行 |
-|--------|-----------|
-| "拉一下今天的竞品动态" | `ingest.py` → `report.py daily` → 展示结果 |
-| "出个周报" | `report.py weekly`（自动取上周数据） |
-| "添加原神为竞品" | 改 `games.json` → `resolve.py` → 确认 derived |
-| "竞品评分怎么样了" | 查 `data/reports/` 或跑 `score.py` 单独看 |
-| "推到腾讯文档" | `publish.py daily` / `weekly` / `monthly` |
-| "帮我配一下监测" | 引导使用 `config/config-wizard.html` |
+**技术约束**：
+- Python 3.10+，**全部脚本只用标准库**（urllib / sqlite3 / json），无需 pip install
+- 所有命令在 skill 根目录执行
+- 可在任何 AI 编码助手（Claude / ChatGPT / Gemini / WorkBuddy 等）中运行，无平台绑定
 
-### 核心命令速查
+**数据流**：
+
+```
+config/competitor-watch.json（唯一配置文件）
+        │  resolve.py
+        ▼
+config/derived/*.json（各渠道入口，agent 自动维护）
+        │  ingest.py
+        ▼
+data/articles.db（SQLite，去重入库 + 自动打分）
+        │  report.py
+        ▼
+data/reports/{daily,weekly,monthly,yearly}/*.md
+        │  publish.py
+        ▼
+腾讯文档 / 企微群 / 本地
+```
+
+---
+
+## 二、快速开始（首次使用）
 
 ```bash
-# ═══ 初始化 / 配置变更后 ═══
-python scripts/resolve.py              # 重建 derived 配置
+# 1. 准备配置（仓库自带 MMO 示例，复制即用）
+cp config/mmo-example.json config/competitor-watch.json     # Windows: Copy-Item
 
-# ═══ 数据采集 ═══
-python scripts/ingest.py               # 全部源
-python scripts/ingest.py --source hykb # 单源
+# 2. 解析各竞品的渠道入口（hykb 全自动；taptap/official 生成占位）
+python scripts/resolve.py
 
-# ═══ 报告生成 ═══
-python scripts/report.py daily                 # 昨天的日报（工作日默认）
-python scripts/report.py daily --date 2026-08-11
-python scripts/report.py daily --catch-up 7    # 补齐过去 7 天
-python scripts/report.py weekly                # 上周
-python scripts/report.py monthly               # 上月
-python scripts/report.py yearly                # 去年
+# 3. 采集（hykb 源无需任何密钥即可抓到评分+公告）
+python scripts/ingest.py
 
-# ═══ 发布 ═══
-python scripts/publish.py daily               # 推送到腾讯文档 / 本地 / 企微
-python scripts/publish.py daily --dry-run      # 预览不实际推
-python scripts/publish.py daily --no-wecom     # 跳过企微
+# 4. 出报告
+python scripts/report.py daily
 ```
+
+报告输出到 `data/reports/daily/<日期>.md`。微信公众号源需先配置 RSS 聚合服务（见第四节）。
 
 ---
 
-## 二、架构总览
+## 三、目录结构与配置
 
 ```
+config-wizard.html          ★ 可视化配置面板 + 用户手册（浏览器直接打开）
+SKILL.md                    本文件（agent 手册）
 config/
-├── games.json              ★ 用户维护（竞品列表 + 品类标签）
-├── config.json             敏感配置（RSS URL、抓取参数）
-├── scoring.json            评分维度 + 权重 + 关键词规则
-├── publish.json            发布目标（腾讯文档 / 企微 / 本地）
-├── report_format.json       报告格式（章节、分类关键词、长度限制）
-├── config-wizard.html      ★ 可视化配置面板（导入/导出/编辑）
-└── derived/                ★ agent 自动生成（勿手动改）
-    ├── wcrss.json          微信公众号 mp_id 映射
-    ├── hykb.json           好游快爆 fid 解析
-    ├── taptap.json         TapTap app_id 占位
-    └── official.json       官网/论坛 URL 占位
-
-scripts/
-├── resolve.py              games.json → derived/ 派生
-├── ingest.py               多源采集调度
-├── score.py                9 维度评分引擎（关键词命中）
-├── report.py               Markdown 报告生成
-├── publish.py              发布（腾讯文档 / 企微 / 本地文件）
-├── db.py                   SQLite 存储 + 去重
-├── wcrss_client.py         RSS 客户端
-└── sources/
-    ├── _common.py          共享工具
-    ├── wechat.py           微信公众号文章
-    ├── taptap.py           TapTap 评分 + 评论
-    ├── hykb.py             好游快爆评分 + 公告
-    └── official.py         官网/论坛
-
-data/
-├── articles.db             SQLite（文章 + 评分快照）
-├── raw/                    原始 HTML 缓存
-└── reports/{daily,weekly,monthly,yearly}/*.md   # 生成的报告
+├── competitor-watch.json   ★ 唯一配置文件（5 个 section，见下表）
+├── mmo-example.json        MMO 示例配置（供新用户试跑，勿直接编辑使用）
+└── derived/                agent 自动生成（勿手动改）
+    ├── wcrss.json          公众号 mp_id 映射
+    ├── hykb.json           好游快爆 fid
+    ├── taptap.json         TapTap app_id（需按 _hint 补齐）
+    └── official.json       官网/论坛 URL
+scripts/                    resolve / ingest / score / report / publish / db / config_loader
+data/                       articles.db + raw/ 原始缓存 + reports/ 生成的报告（勿删）
+.backup-*/                  旧版配置归档（仅迁移期存在）
 ```
 
-### 数据流
+**统一配置 `config/competitor-watch.json` 的 5 个 section**：
 
-```
-用户编辑 games.json
-       │
-       ▼
-  resolve.py ──→ derived/*.json（各数据源配置）
-       │
-       ▼
-  ingest.py ──→ articles.db（去重入库）
-       │
-       ▼
-  score.py ──→ 每篇文章打分（9 维度 × 权重）
-       │
-       ▼
-  report.py ──→ data/reports/*/*.md（Markdown 报告）
-       │
-       ▼
-  publish.py ──→ 腾讯文档 / data/reports/（本地） / 企微群
-```
+| Section | 管什么 | 关键字段 |
+|---------|--------|---------|
+| `games` | 竞品列表（用户主要维护的） | name（唯一）、aliases、genre、priority、type=`game`\|`industry` |
+| `sources` | 数据源接入 | wcrss.feed_url（微信 RSS）、fetch_defaults |
+| `scoring` | 评分体系 | dimensions（含每维度 1–5 分标准 criteria + boost/penalty 关键词）、weights、tiers、mount_points |
+| `publish` | 发布渠道 | tencent_docs、wecom_bot、local_backup |
+| `report` | 报告格式 | content_tags、limits、section_order、kind_titles、dirty_marker |
 
----
-
-## 三、配置管理
-
-### 3.1 用户如何配置
-
-**推荐方式**：双击打开 `config/config-wizard.html`
-
-这是一个单文件可视化面板，功能：
-- **导入**：从已有的 JSON 文件或备份一键恢复配置
-- **游戏列表**：增删竞品、设品类标签、优先级
-- **密钥 & 服务**：RSS Feed URL、抓取参数
-- **评分维度**：动态增减维度、调权重、设评级阈值
-- **发布设置**：本地输出（默认 md/docx）、腾讯文档、企微机器人
-- **导出**：下载 4 个 JSON 配置文件到 config/ 目录
-- **实时同步**：所有修改自动保存到 localStorage
-
-**手动方式**：直接编辑 `config/` 下的 JSON 文件。
-
-### 3.2 games.json Schema
-
-```json
-{
-  "_comment": "顶层游戏列表。增删游戏 = 在 games 数组加一行。",
-  "_schema": {
-    "name": "中文显示名（必填唯一）",
-    "type": "game | industry",
-    "aliases": "搜索别名（数组）",
-    "priority": "high | normal | low",
-    "genre": "品类标签",
-    "notes": "备注"
-  },
-  "games": [
-    { "name": "原神",     "aliases": ["Genshin"],          "genre": "open_world_rpg", "priority": "high",  "type": "game" },
-    { "name": "王者荣耀", "aliases": ["HoK","Honor of Kings"],"genre": "moba",          "priority": "high",  "type": "game" },
-    { "name": "GameLook", "aliases": [],                     "genre": "",             "priority": "normal","type": "industry" }
-  ]
-}
-```
+**games 数组字段**：
 
 | 字段 | 必填 | 说明 |
 |------|------|------|
-| `name` | ✅ | 全局唯一标识，用于 db 匹配和报告显示 |
-| `aliases` | ❌ | 用于 wcrss 反向匹配公众号名称 |
-| `type` | ❌ | `game`=游戏竞品，`industry`=行业媒体号 |
-| `priority` | ❌ | 影响日报排序和抓取顺序 |
-| `genre` | ❌ | 品类标签，影响评分关键词匹配（Phase 2 后启用） |
+| `name` | ✅ | 全局唯一，用于 db 匹配和报告显示 |
+| `aliases` | ❌ | 搜索别名，用于 wcrss 反向匹配公众号 |
+| `type` | ❌ | `game`=游戏竞品；`industry`=行业媒体号（评分降权，不抓渠道评分） |
+| `priority` | ❌ | `high`/`normal`/`low`，影响日报排序 |
+| `genre` | ❌ | 品类标签（mmo/slg/card/open_world_rpg/…） |
+| `notes` | ❌ | 备注 |
 
-### 3.3 scoring.json — 评分体系
-
-9 维度评分引擎，每篇文章按关键词命中得分：
-
-| 维度 ID | 名称 | 默认权重 | 含义 |
-|---------|------|---------|------|
-| A_strategy_fit | 战略契合度 | 1.2 | 是否匹配自家产品核心方向 |
-| B_user_match | 用户匹配度 | 1.0 | 目标用户画像重叠度 |
-| C_portability | 玩法可迁移性 | 1.1 | 能否借鉴到自家产品 |
-| D_cost_inverse | 实施成本(反向) | 0.9 | 复制难度越高分越低 |
-| E_cycle_fit | 周期合理性 | 0.8 | 是否匹配当前版本节奏 |
-| F_differentiation | 差异化潜力 | 1.0 | 与市场已有方案的差异度 |
-| G_pay_drive | 付费拉动力 | 1.1 | 对营收的潜在拉动 |
-| H_voice | 用户声量 | 0.9 | 玩家讨论热度 |
-| I_risk_inverse | 风险等级(反向) | 1.0 | 风险越高分越低 |
-
-**评级阈值**（可自定义）：
-- **S** ≥36: 强烈推荐 · 战略级
-- **A** ≥32: 可立项 · 进策划评审
-- **B** ≥28: 差异化借鉴 · 排进版本
-- **C** ≥22: 存档参考
-- **D** <22: 忽略
+**修改配置的三种方式**：① 用户在 `config-wizard.html` 面板编辑后导出覆盖；② 直接编辑 JSON；③ 让 agent 改。**改了 games 后必须重跑 `resolve.py`**。
 
 ---
 
 ## 四、数据源
 
-| 渠道 | 自动化程度 | 数据类型 | 配置方式 |
+| 渠道 | 自动化程度 | 数据类型 | 接入方式 |
 |------|-----------|---------|---------|
-| `wechat` 微信公众号 | 半自动（需订阅 RSS 服务） | 文章正文 | `derived/wcrss.json` |
-| `taptap` | 半自动（需补 app_id） | 评分 + 评论 | `derived/taptap.json` |
-| `hykb` 好游快爆 | **全自动** | 评分 + 更新公告 | `derived/hykb.json` |
-| `official` 官网/论坛 | placeholder（需手动配置） | 链接快照 / RSS | `derived/official.json` |
+| `hykb` 好游快爆 | **全自动** | 评分 + 更新公告 | resolve.py 自动搜索 fid，零配置 |
+| `wechat` 微信公众号 | 半自动 | 文章正文 | 需 RSS 聚合服务，地址填 `sources.wcrss.feed_url` 或环境变量 `WCRSS_FEED_URL` |
+| `taptap` | 半自动 | 评分 + 评论 | resolve 生成占位 + `_hint` 搜索链接，按提示补 app_id 到 `derived/taptap.json` |
+| `official` 官网/论坛 | 手动配置 | 链接快照 / RSS | 在 `derived/official.json` 填 url（可选 rss / CSS selectors） |
 
-### 新增竞品后的标准流程
+**新增竞品标准流程**：
 
 ```
-1. 编辑 games.json（添加新竞品）
-        │
-2. 运行 python scripts/resolve.py
-        │
-   ├─ wcrss: 检查是否已订阅对应公众号
-   │   ├─ 已订阅 → 自动写入 mp_id 到 derived/wcrss.json ✅
-   │   └─ 未订阅 → 打印 Subscription Plan → ⚠️ agent 必须询问用户同意后才引导订阅
-   │
-   ├─ hykb: 自动搜索定位 fid ✅
-   │
-   ├─ taptap: 若 app_id 为空 → 给出 _hint 链接让用户补
-   │
+1. 修改 config/competitor-watch.json 的 games 数组（加一行）
+2. python scripts/resolve.py
+   ├─ wcrss: 已订阅 → 自动写 mp_id ✅；未订阅 → 打印 Subscription Plan → ⚠️ 必须询问用户同意后才引导订阅
+   ├─ hykb: 自动搜索定位 fid ✅（置信不足会留 _hint）
+   ├─ taptap: app_id 为空 → 给 _hint 链接让用户补
    └─ official: 生成 placeholder
-        │
-3. 运行 python scripts/ingest.py   # 采集数据
-4. 运行 python scripts/report.py daily  # 出报告
+3. python scripts/ingest.py
+4. python scripts/report.py daily
 ```
 
-**关键约束**：wcrss 订阅变化必须经用户明确同意。Resolve 只打印 plan，不主动下单。
+**关键约束**：wcrss 订阅变化必须经用户明确同意。resolve 只打印 plan，不主动下单。
 
 ---
 
-## 五、报告生成（Agent 核心指令）
+## 五、评分体系
 
-### 5.1 日报
+每篇文章按 **关键词规则引擎**（无 LLM）打分：
 
-**何时出**：每个工作日早上，覆盖**前一天**的全部数据。
+1. 每维度起始 **3 分**（中性），命中 boost 关键词上调（如 +2/+1）、命中 penalty 关键词下调，叠加来源倾向（source_weight_bias）
+2. 钳制在 1–5 分，乘以维度权重求和 → 总分
+3. 按 tiers 档位评级（默认 S≥36 / A≥32 / B≥28 / C≥22 / D）
+4. `industry` 类型竞品整体降分（默认 -3），不参与 TOP 推荐
+
+**默认 9 维度**（全部可在配置中增删，脚本自动适配；每维度在配置中含 `desc` 衡量说明与 `criteria` 1–5 分判分标准）：
+
+| 维度 | 名称 | 默认权重 | 一句话标准（5 分 ↔ 1 分） |
+|------|------|---------|--------------------------|
+| A_strategy_fit | 战略契合度 | 1.2 | 直接命中核心系统焦点 ↔ 与产品方向无关 |
+| B_user_match | 用户匹配度 | 1.0 | 用户画像高度重叠 ↔ 完全不同人群 |
+| C_portability | 玩法可迁移性 | 1.1 | 现有模块直接挂载 ↔ 依赖全新引擎重构 |
+| D_cost_inverse | 实施成本(反向) | 0.9 | 零成本配置化 ↔ 大版本级投入 |
+| E_cycle_fit | 周期合理性 | 0.8 | 完美契合当前节点 ↔ 无周期参考价值 |
+| F_differentiation | 差异化潜力 | 1.0 | 市场稀缺题材 ↔ 纯粹模仿 |
+| G_pay_drive | 付费拉动力 | 1.1 | 直接拉动 ARPU ↔ 无付费拉动 |
+| H_voice | 用户声量 | 0.9 | 破圈级传播 ↔ 无人关注 |
+| I_risk_inverse | 风险等级(反向) | 1.0 | 官方授权零风险 ↔ 私服/违规高风险 |
+
+完整判分标准与关键词见配置文件 `scoring.dimensions`（每个维度的 `criteria` 字段给出 1–5 分逐档描述，`boost`/`penalty` 为引擎实际命中规则）。用户可通过 config-wizard.html「评分体系」页签可视化调整。
 
 ```bash
-# 标准用法（默认取昨天）
-python scripts/report.py daily
+python scripts/score.py                # 增量：只打未打分的（ingest 后会自动跑）
+python scripts/score.py --rescore-all  # 全量重打（改配置后用）
+python scripts/score.py --since 2026-06-01 --dry-run  # 预览
+```
 
-# 指定日期
-python scripts/report.py daily --date 2026-08-11
+---
 
-# 补齐过去 N 天缺失的报告（已存在的跳过，幂等安全）
-python scripts/report.py daily --catch-up 7
+## 六、报告生成
 
-# 强制重新生成已存在的报告
+```bash
+python scripts/report.py daily                    # 昨天的日报（默认）
+python scripts/report.py daily --date 2026-08-11  # 指定日期
+python scripts/report.py daily --catch-up 7       # 补齐过去 7 天（幂等，缺哪天补哪天）
 python scripts/report.py daily --catch-up 7 --force
+python scripts/report.py weekly                   # 上周一~周日
+python scripts/report.py monthly                  # 上月
+python scripts/report.py yearly                   # 去年
 ```
 
 **语义规则**：
-- 日报内容**严格按 `publish_time` 过滤**——"8月11日的日报"只含 8月11日发布的文章
-- 工作日 12:00 跑默认拿到的是**昨天的完整一天**
-- 当 `--date` 是当天时，报告头会插入 **"⚠️ 内容不完整"** 警告（当日尚未结束）
-- `--catch-up` 扫到脏标记文件会**自动重生**
-
-**日报结构**（由 `config/report_format.json` 控制）：
-
-```markdown
-# 竞品日报 2026-08-11（周一）
-
-## 概览
-- 监测竞品：N 个
-- 数据源：微信公众号 / TapTap / 好游快爆 / 官方论坛
-- 本期文章：M 条 | 高信号(≥B)：K 条
-
-## 摘要
-### 📌 高信号事件（Score ≥ B）
-| 竞品 | 来源 | 标题 | 评分 | 维度命中 |
-
-### 🏷️ 分类汇总
-| 分类 | 数量 | 涉及竞品 |
-|------|------|----------|
-| 新版本 | 3 | 原神、燕云、逆水寒 |
-| 活动运营 | 5 | ... |
-
-### 📊 评分分布
-| S | A | B | C | D |
-|---|---|---|---|---|
-
-## 📆 日报原文清单（按 publish_time 严格过滤）
-[按竞品分组，列出每篇文章的标题/来源/时间/摘要]
-```
-
-### 5.2 周报
-
-**何时出**：每周一早上，覆盖**上一周一~周日**的数据。
-
-```bash
-python scripts/report.py weekly
-```
-
-**周报在日报基础上增加**：
-- TOP 5 重点事件（跨天聚合）
-- 评分趋势观察（哪些竞品评分上升/下降）
-- 玩家口碑关键词（来自低分评论）
-- 每个竞品 1 句话总结
-- 本期建议关注（2-3 个值得深挖的方向）
-
-### 5.3 月报 / 年报
-
-```bash
-python scripts/report.py monthly   # 上月
-python scripts/report.py yearly    # 去年
-```
-
-结构与周报类似，但时间跨度更大，增加：
-- 月度/年度评分走势对比
-- 长期趋势判断（持续升温 vs 偶发事件）
-
-### 5.4 报告格式定制
-
-所有报告格式集中在 `config/report_format.json`，可随时编辑即时生效：
-
-| 可配项 | 说明 |
-|--------|------|
-| `content_tags` | 文章分类关键词（新增分类 = 加一组关键词） |
-| `source_labels` | 数据源显示名和排列顺序 |
-| `limits` | 各类长度截断（标题数/描述字数） |
-| `section_order` | 章节渲染顺序 |
-| `kind_titles` | 日报/周报/月报/年报的大标题前缀 |
-| `dirty_marker` | 当日不完整的警告文案 |
+- 日报内容**严格按 publish_time 过滤**——"8月11日的日报"只含当日 00:00–24:00 (CST) 发布的文章
+- `--date` 为当天时，报告头自动插入"⚠️ 内容不完整"警告 + 文件尾 dirty marker；catch-up 扫到 marker 自动重生
+- 报告结构（概览 / 摘要 / 原文清单）、分类关键词、标题文案全部由配置 `report` 节控制，改配置即时生效
 
 ---
 
-## 六、发布
-
-### 6.1 发布渠道
-
-| 渠道 | 配置位置 | 开关 |
-|------|---------|------|
-| **本地文件**（默认） | `publish.json` → `local_output` | `enabled: true`（默认） |
-| 腾讯文档 | `publish.json` → `tencent_docs` | `enabled: false`（需配置） |
-| 企业微信 | `publish.json` → `wecom_bot` | `enabled: false`（需配置 webhook） |
-
-### 6.2 发布命令
+## 七、发布
 
 ```bash
-# 日报（每天一份，label=YYYY-MM-DD）
-python scripts/publish.py daily
-python scripts/publish.py daily --date 2026-08-11
-python scripts/publish.py daily --catch-up 7
-
-# 周报/月报/年报（每期一份）
-python scripts/publish.py weekly
-python scripts/publish.py monthly
-python scripts/publish.py yearly
-
-# 预览模式（看会做什么但不实际执行）
-python scripts/publish.py daily --dry-run
-
-# 跳过企微推送
-python scripts/publish.py daily --no-wecom
+python scripts/publish.py daily                # 推昨天的日报
+python scripts/publish.py daily --catch-up 7   # 批量补推
+python scripts/publish.py weekly / monthly / yearly
+python scripts/publish.py daily --dry-run      # 预览不实际推（正式推前建议先跑）
+python scripts/publish.py daily --no-wecom     # 跳过企微
 ```
 
-### 6.3 腾讯文档行为
+**渠道行为**：
 
-- Token 从 WorkBuddy 连接器自动读取（环境变量 `TDOC_ACCESS_TOKEN`）
-- 每个 `(kind, label)` 一份独立文档：如 `daily/2026-08-11` 一份、`weekly/2026-W32` 一份
-- 同 label 重跑 = **覆盖刷新**（不复用旧文档内容）
-- **按月归档**：设置 `root_folder_id` 后，自动创建 `YYYY-M/` 子文件夹并归档
-- `doc_ids` 和 `doc_urls` 由 agent 自动回填到 `publish.json`
+| 渠道 | 开关 | 行为 |
+|------|------|------|
+| 本地 Markdown | 恒开 | report.py 直接写 `data/reports/` |
+| 腾讯文档 | `publish.tencent_docs.enabled` | 每 `(kind, label)` 一份独立文档；同 label 重跑=覆盖刷新；设置 root_folder_id 后按月归档（自动建 YYYY-M 子文件夹）；doc_ids/doc_urls 由脚本自动回填配置 |
+| 企微机器人 | `publish.wecom_bot.enabled` | 推摘要卡片；高信号事件 @all |
+
+**Token 发现顺序**：环境变量 `TDOC_ACCESS_TOKEN` / `WCRSS_TDOC_TOKEN` → 配置 `publish.tencent_docs.access_token` → `~/.mcporter/credentials.json`。
 
 ---
 
-## 七、Agent 行为规范
+## 八、Agent 行为规范
 
-### 7.1 必须做的事
+### 必须做的事
 
-1. **首次运行前**：检查 `config/games.json` 是否存在且非空。若不存在，引导用户使用 `config-wizard.html` 或从示例模板复制
-2. **增改竞品后**：必须跑 `resolve.py` 再跑 `ingest.py`
+1. **首次运行**：检查 `config/competitor-watch.json` 是否存在。不存在 → 引导用户复制 `config/mmo-example.json` 或打开 `config-wizard.html` 配置
+2. **增改竞品后**：先 `resolve.py` 再 `ingest.py`
 3. **wcrss 缺订阅**：必须先问用户同意，不得自行添加订阅
-4. **报告出错**：先查 `articles.db` 是否有数据，再查 `derived/` 配置是否正确
-5. **发布前确认**：`--dry-run` 预览一遍，确认内容无误后再正式推
+4. **报告/数据异常**：先查 `data/articles.db`（sqlite3）有无数据，再查 `config/derived/` 配置是否正确
+5. **正式发布前**：先 `--dry-run` 预览，确认内容无误后再推
+6. **用户问"怎么用/怎么配"**：指向 `config-wizard.html`（根目录，双击打开，第一个页签是完整用户手册）
 
-### 7.2 禁止做的事
+### 禁止做的事
 
-1. 不要直接修改 `derived/` 中的文件（它们由 `resolve.py` 生成）
-2. 不要把 `config.json` / `publish.json` / `games.json` 提交到 git（已在 `.gitignore`）
-3. 不要把抓取间隔调得太小（默认 1s，避免触发风控）
-4. 不要在未征得用户同意的情况下添加新的数据源订阅
+1. 不要直接修改 `config/derived/`（由 resolve.py 生成；taptap app_id 与 official url 例外，按 _hint 引导用户补）
+2. 不要把 `config/competitor-watch.json` 提交到公开仓库（已在 .gitignore；含 feed token / webhook 等敏感信息）
+3. 不要把抓取间隔调得太小（脚本内置 ≥1s，避免触发风控）
+4. 不要删除或重置 `data/` 目录（用户的历史数据）
+5. 不要在未征得用户同意的情况下添加新的数据源订阅
 
-### 7.3 错误处理指南
+### 错误处理
 
 | 症状 | 排查步骤 |
 |------|---------|
-| ingest 无数据 | 检查 `derived/wcrss.json` 有无 mp_id；检查 RSS URL 是否有效 |
-| 报告全空 | 检查 `--date` 对应日期是否有文章；查看 `db.articles` 表 |
-| 评分全是 D | 检查 `scoring.json` 的关键词是否匹配当前品类 |
-| publish 报错 | 检查 token 是否过期；检查 `root_folder_id` 是否有效 |
-| wcrss missing | 引导用户去 RSS 服务后台添加订阅 → 重跑 `resolve.py` |
+| ingest 无数据 | 看 `derived/` 各文件有无有效 id / fid；wechat 源确认 feed_url 有效 |
+| 报告全空 | 该日无文章属正常；或查 articles.db 确认 |
+| 评分全 C/D | scoring.dimensions 关键词与品类不匹配 → 引导用户在面板调整 |
+| publish 报错 | tdoc：token 过期 / root_folder_id 无效；wecom：webhook 失效 |
+| wcrss missing | 引导用户去 RSS 服务后台添加订阅 → 重跑 resolve.py |
+| 配置读取失败 | 跑 `python scripts/config_loader.py` 自检（打印各 section 概况） |
 
 ---
 
-## 八、安全与隐私
+## 九、安全与隐私
 
-- 所有敏感配置（token、API key、file_id）存储在 `config/*.json`，已被 `.gitignore` 排除
-- 备份文件 `config/local_backup/secrets.backup.json` 同样被排除
-- 公开仓库中只有 `*.example.json` 模板（不含真实凭证）
+- 敏感信息（token、webhook、file_id）集中在 `config/competitor-watch.json`，已被 `.gitignore` 排除；`config/mmo-example.json` 是唯一随仓库分发的示例（不含真实凭证）
 - API Key 优先读环境变量：`WCRSS_FEED_URL`、`TDOC_ACCESS_TOKEN`、`WECOM_WEBHOOK_URL`
+- 旧版拆分配置已归档在 `.backup-*/`（不随仓库分发）
 
 ---
 
-## 九、路线图
+## 十、路线图
 
-- [x] Phase 1: 脱敏 + 配置面板 + .gitignore
-- [ ] Phase 2: 品类画像系统（`genre_profiles/`，多品类评分适配）
+- [x] Phase 1: 脱敏 + 可视化配置面板
+- [x] Phase 2: 配置统一（单一 JSON + 内嵌用户手册 + 评分标准）
 - [ ] Phase 3: 数据源扩展（B站视频 / 小红书 / 贴吧）
 - [ ] Phase 4: LLM 洞察层（智能分析 section，超越关键词匹配）
-- [ ] Phase 5: 多项目管理（按项目分文件，多产品线并行监测）
+- [ ] Phase 5: 品类画像系统（多品类评分关键词自动适配）
+- [ ] Phase 6: 多项目管理（按项目分文件，多产品线并行监测）

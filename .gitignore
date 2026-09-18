@@ -1,10 +1,7 @@
 # ── 敏感配置（真实凭证、文档 ID、项目代号）──
-config/config.json
-config/publish.json
-config/games.json
-config/scoring.json
+config/competitor-watch.json
 config/derived/
-config/local_backup/
+.backup-*/
 
 # ── 运行时数据 ──
 data/

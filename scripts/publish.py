@@ -20,7 +20,7 @@ Usage:
 
 Token discovery (priority):
   1. ENV WCRSS_TDOC_TOKEN / TDOC_ACCESS_TOKEN
-  2. config/publish.json -> tencent_docs.access_token
+  2. config/competitor-watch.json -> publish.tencent_docs.access_token
   3. ~/.mcporter/credentials.json (entries with serverName=tencent-docs)
 """
 from __future__ import annotations
@@ -40,7 +40,10 @@ if sys.platform == "win32":
     sys.stderr.reconfigure(encoding="utf-8")
 
 ROOT = Path(__file__).resolve().parent.parent
-CONFIG_PUBLISH = ROOT / "config" / "publish.json"
+sys.path.insert(0, str(ROOT / "scripts"))
+
+import config_loader  # noqa: E402
+
 REPORT_DIR = ROOT / "data" / "reports"
 
 CST = dt.timezone(dt.timedelta(hours=8))
@@ -49,16 +52,13 @@ CST = dt.timezone(dt.timedelta(hours=8))
 # ---------- helpers ----------
 
 def load_publish_config() -> dict:
-    if not CONFIG_PUBLISH.exists():
-        raise FileNotFoundError(f"publish config not found: {CONFIG_PUBLISH}")
-    return json.loads(CONFIG_PUBLISH.read_text(encoding="utf-8"))
+    """Publish section of the unified config (config/competitor-watch.json)."""
+    return config_loader.load_publish()
 
 
 def save_publish_config(cfg: dict) -> None:
-    CONFIG_PUBLISH.write_text(
-        json.dumps(cfg, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
+    """Write the publish section back into the unified config (other sections kept)."""
+    config_loader.save_section("publish", cfg)
 
 
 def discover_tdoc_token(cfg: dict) -> str | None:

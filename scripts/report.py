@@ -7,7 +7,7 @@
   - 支持 --catch-up N：扫过去 N 天，缺哪天/标记 dirty 的就重生成
 
 v3.7 变更：
-  - 输出格式抽到 config/report_format.json，可手动编辑（关键词/长度/标题/章节顺序）
+  - 输出格式抽到统一配置 config/competitor-watch.json 的 report 节（关键词/长度/标题/章节顺序）
   - 当 anchor == 今天 时，文件头加警告横幅，文件末加 dirty marker
   - catch-up 扫到 dirty marker 视为不完整，自动 force 重生
 """
@@ -28,11 +28,11 @@ if sys.platform == "win32":
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
+import config_loader  # noqa: E402
 from db import connect, query_articles  # noqa: E402
 
 DB_PATH = ROOT / "data" / "articles.db"
 REPORT_DIR = ROOT / "data" / "reports"
-FORMAT_PATH = ROOT / "config" / "report_format.json"
 
 CST = timezone(timedelta(hours=8))
 
@@ -40,9 +40,8 @@ CST = timezone(timedelta(hours=8))
 # ---------- format config ----------
 
 def load_format() -> dict:
-    if not FORMAT_PATH.exists():
-        raise FileNotFoundError(f"format config not found: {FORMAT_PATH}")
-    return json.loads(FORMAT_PATH.read_text(encoding="utf-8"))
+    """Report format section of the unified config (config/competitor-watch.json)."""
+    return config_loader.load_report_format()
 
 
 _FORMAT_CACHE: dict | None = None
@@ -203,24 +202,24 @@ def _render_summary(out: list[str], rows) -> None:
     out.append(f"今日共 **{len(rows)}** 篇内容，覆盖 **{len(by_comp)}** 个竞品/行业号。")
     out.append("")
 
-    # 评分分层（9 维度评估引擎）
-    if any(t in tier_counter for t in ("S", "A", "B", "C", "D")):
-        out.append("**评分分层**（9 维度评估，满分 45）：")
+    # 评分分层（维度评估引擎，档位由 scoring 配置决定）
+    scoring_cfg = config_loader.load_scoring()
+    tiers_cfg = scoring_cfg.get("tiers", {})
+    tier_order = [n for n, _ in sorted(tiers_cfg.items(),
+                                        key=lambda kv: -float(kv[1].get("min", 0)))]
+    if any(t in tier_counter for t in tier_order):
+        n_dims = len(scoring_cfg.get("dimensions", {})) or 9
+        max_score = sum(float(w) for w in scoring_cfg.get("weights", {}).values()) * 5
+        out.append(f"**评分分层**（{n_dims} 维度评估，满分 {max_score:.0f}）：")
         out.append("")
         out.append("| 等级 | 数量 | 占比 | 说明 |")
         out.append("|---|---|---|---|")
-        tier_labels = {
-            "S": "强烈推荐 · 战略级",
-            "A": "可立项 · 进策划评审",
-            "B": "差异化借鉴 · 排进版本",
-            "C": "存档参考",
-            "D": "忽略",
-        }
         total_n = len(rows)
-        for t in ("S", "A", "B", "C", "D"):
+        for t in tier_order:
             n = tier_counter.get(t, 0)
             pct = (n / total_n * 100) if total_n else 0
-            out.append(f"| {t} | {n} | {pct:.1f}% | {tier_labels[t]} |")
+            label = tiers_cfg[t].get("label", "")
+            out.append(f"| {t} | {n} | {pct:.1f}% | {label} |")
         if tier_counter.get("?", 0):
             out.append(f"| ? | {tier_counter['?']} | - | 未打分（旧数据） |")
         out.append("")
@@ -274,7 +273,7 @@ def _render_summary(out: list[str], rows) -> None:
             out.append(f"- ……还有 {len(lst) - titles_per} 篇")
         out.append("")
 
-    out.append("> 摘要由脚本基于标题/描述关键词自动生成；评分由 9 维度规则引擎计算（详见 `config/scoring.json`）。")
+    out.append(f"> 摘要由脚本基于标题/描述关键词自动生成；评分规则见统一配置 `config/competitor-watch.json` 的 `scoring` 节（含各维度评分标准）。")
     out.append("")
 
 

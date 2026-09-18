@@ -1,6 +1,6 @@
-"""Resolve user's top-level games.json into derived configs.
+"""Resolve the unified config's game list into derived configs.
 
-User maintains ONLY: config/games.json (top-level game list).
+User maintains ONLY: config/competitor-watch.json → games（顶层游戏列表）.
 Agent auto-maintains:
   - config/derived/wcrss.json    (mp_id mapping; reflects current wcrss subscriptions filtered by games)
   - config/derived/hykb.json     (auto-resolved fid via m.3839.com search)
@@ -32,11 +32,11 @@ if sys.platform == "win32":
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
+import config_loader  # noqa: E402
 from wcrss_client import fetch_articles  # noqa: E402
 
 CONFIG_DIR = ROOT / "config"
 DERIVED_DIR = CONFIG_DIR / "derived"
-GAMES_PATH = CONFIG_DIR / "games.json"
 
 UA_PC = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 UA_M  = "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0) AppleWebKit/605.1.15 Mobile"
@@ -56,8 +56,8 @@ def http_get(url: str, ua: str = UA_PC, timeout: int = 15) -> str:
 
 
 def load_games() -> dict:
-    with GAMES_PATH.open("r", encoding="utf-8") as f:
-        return json.load(f)
+    """Games section of the unified config (config/competitor-watch.json)."""
+    return {"games": config_loader.load_games()}
 
 
 def write_derived(name: str, payload) -> None:
@@ -246,7 +246,7 @@ def resolve_taptap_skeleton(games: list[dict], existing: dict[str, dict]) -> lis
 # ---------- main ----------
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Resolve games.json into derived configs")
+    parser = argparse.ArgumentParser(description="Resolve unified-config games into derived configs")
     parser.add_argument("--check", action="store_true",
                         help="only print delta plan, do not write derived/*")
     args = parser.parse_args()
@@ -255,10 +255,27 @@ def main() -> int:
     games = games_doc.get("games", []) or []
     games_only = [g for g in games if g.get("type", "game") == "game"]
     industry = [g for g in games if g.get("type") == "industry"]
-    print(f"games.json -> {len(games)} entries ({len(games_only)} game / {len(industry)} industry)\n")
+    print(f"games (unified config) -> {len(games)} entries ({len(games_only)} game / {len(industry)} industry)\n")
 
-    # 1) wcrss
-    wcrss_resolved, wcrss_missing = resolve_wcrss(games)
+    # 1) wcrss — 未配置 RSS 服务时跳过并保留现有 derived 映射
+    wcrss_resolved: list[dict] = []
+    wcrss_missing: list[dict] = list(games)
+    try:
+        wcrss_resolved, wcrss_missing = resolve_wcrss(games)
+    except Exception as e:  # noqa: BLE001
+        print(f"[wcrss] skip ({e})")
+        prev_path = DERIVED_DIR / "wcrss.json"
+        if prev_path.exists():
+            try:
+                prev = json.loads(prev_path.read_text(encoding="utf-8"))
+                wcrss_resolved = prev.get("entries", []) or []
+                covered = {x["name"] for x in wcrss_resolved}
+                wcrss_missing = [g for g in games if g["name"] not in covered]
+                print(f"[wcrss] kept {len(wcrss_resolved)} existing entries from derived/wcrss.json")
+            except Exception:  # noqa: BLE001
+                pass
+        else:
+            print("[wcrss] no existing derived/wcrss.json either; all games treated as missing")
     print(f"[wcrss] resolved: {len(wcrss_resolved)}, missing subscription: {len(wcrss_missing)}")
     if wcrss_missing:
         print("[wcrss] === Subscription Plan (NEEDS USER CONFIRMATION) ===")

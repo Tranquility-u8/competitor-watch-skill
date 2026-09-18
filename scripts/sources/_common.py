@@ -4,6 +4,7 @@ from __future__ import annotations
 import gzip
 import io
 import json
+import sys
 import time
 from pathlib import Path
 from typing import Any
@@ -11,8 +12,12 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parent.parent.parent
-CONFIG_PATH = ROOT / "config" / "config.json"
-GAMES_PATH = ROOT / "config" / "games.json"
+sys.path.insert(0, str(ROOT / "scripts"))
+
+import config_loader  # noqa: E402
+
+CONFIG_PATH = ROOT / "config" / "competitor-watch.json"
+GAMES_PATH = CONFIG_PATH
 DERIVED_DIR = ROOT / "config" / "derived"
 DB_PATH = ROOT / "data" / "articles.db"
 RAW_DIR = ROOT / "data" / "raw"
@@ -32,13 +37,13 @@ def load_json(path: Path) -> dict[str, Any]:
 
 
 def load_config() -> dict[str, Any]:
-    return load_json(CONFIG_PATH)
+    """Flat view of the unified config's sources section."""
+    return config_loader.load_sources_flat()
 
 
 def load_games() -> list[dict]:
-    """Top-level user-maintained list."""
-    doc = load_json(GAMES_PATH)
-    return doc.get("games", []) or []
+    """Top-level user-maintained list (unified config → games.games)."""
+    return config_loader.load_games()
 
 
 def game_priority_order(games: list[dict] | None = None) -> list[str]:

@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Competitor Watch · 配置面板与用户手册</title>
+<style>
+:root {
+  --bg: #f5f6fa; --card: #fff; --border: #e2e4e8;
+  --primary: #4f46e5; --primary-hover: #4338ca; --primary-soft: #eef2ff;
+  --text: #1a1a2e; --text-muted: #6b7280;
+  --success: #059669; --warning: #d97706; --danger: #dc2626;
+  --code-bg: #1e1e2e;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", Roboto, "Noto Sans SC", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.65; }
+
+.container { max-width: 980px; margin: 0 auto; padding: 32px 20px 90px; }
+
+/* ═══ Header ═══ */
+.header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+.header-left h1 { font-size: 21px; font-weight: 800; letter-spacing: -0.3px; }
+.header-left .subtitle { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
+.header-actions { display: flex; gap: 10px; align-items: center; }
+
+.btn { padding: 9px 18px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: all .15s ease; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(79,70,229,.3); }
+.btn-outline { background: #fff; color: var(--text); border: 1.5px solid var(--border); }
+.btn-outline:hover { background: #f9fafb; border-color: #c4c8cc; }
+.btn-sm { padding: 5px 11px; font-size: 12px; }
+.btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+.btn-ghost:hover { color: var(--danger); border-color: #fecaca; background: #fef2f2; }
+
+.sync-dot { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; background: #d1fae5; color: #065f46; transition: opacity .3s; }
+.sync-dot .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); animation: pulse 2s infinite; }
+.sync-dot.saving .dot { animation: none; background: var(--warning); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* ═══ Tabs ═══ */
+.tabs { display: flex; gap: 0; background: #fff; border-radius: 12px; padding: 4px; margin-bottom: 24px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,.04); overflow-x: auto; }
+.tab { flex: 1; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-muted); transition: all .2s; border: none; background: none; text-align: center; white-space: nowrap; }
+.tab:hover { color: var(--text); background: #f9fafb; }
+.tab.active { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(79,70,229,.25); }
+
+/* ═══ Cards & forms ═══ */
+.card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 22px; margin-bottom: 16px; }
+.card-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+.card-title .icon { font-size: 17px; }
+.card-desc { font-size: 12.5px; color: var(--text-muted); margin-bottom: 18px; line-height: 1.55; }
+
+.form-row { display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px; }
+.form-row label { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.form-row .hint { font-size: 12px; color: var(--text-muted); font-weight: 400; }
+.form-row input, .form-row select, .form-row textarea {
+  padding: 9px 13px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; background: #fafbfc; transition: all .15s; font-family: inherit; width: 100%;
+}
+.form-row input:focus, .form-row select:focus, .form-row textarea:focus { outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(79,70,229,.08); }
+.form-hgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-hgrid .form-row { margin-bottom: 0; }
+
+.badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 99px; font-size: 11px; font-weight: 700; }
+.badge-ok { background: #d1fae5; color: #065f46; }
+.badge-warn { background: #fef3c7; color: #92400e; }
+.badge-empty { background: #f3f4f6; color: var(--text-muted); }
+
+.list-item { display: flex; align-items: center; gap: 10px; padding: 11px 14px; background: #fafbfc; border: 1.5px solid var(--border); border-radius: 10px; margin-bottom: 8px; transition: border-color .15s; }
+.list-item:hover { border-color: #c4c8cc; }
+.item-name { font-weight: 700; font-size: 14px; min-width: 100px; }
+.item-meta { font-size: 12px; color: var(--text-muted); flex: 1; }
+.item-actions { display: flex; gap: 5px; }
+
+.genre-tag { background: var(--primary-soft); color: #4338ca; padding: 3px 9px; border-radius: 5px; font-size: 11px; font-weight: 700; }
+.priority-tag { padding: 3px 7px; border-radius: 5px; font-size: 11px; font-weight: 700; }
+.ph-high { background: #fef3c7; color: #92400e; }
+.ph-normal { background: #dbeafe; color: #1d4ed8; }
+.ph-low { background: #f3f4f6; color: #6b7280; }
+
+.stat-row { display: flex; gap: 12px; margin-bottom: 16px; }
+.stat { background: linear-gradient(135deg, #f8f9fc, #f0f1f5); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; flex: 1; text-align: center; }
+.stat .num { font-size: 26px; font-weight: 800; color: var(--primary); }
+.stat .label { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+.divider { height: 1px; background: var(--border); margin: 18px 0; }
+.add-form { display: flex; gap: 8px; align-items: flex-end; margin-bottom: 16px; flex-wrap: wrap; }
+.add-form .form-row { margin-bottom: 0; min-width: 110px; }
+
+.json-output { background: var(--code-bg); color: #cdd6f4; padding: 18px; border-radius: 10px; font-family: "JetBrains Mono", "Cascadia Code", Consolas, monospace; font-size: 12px; line-height: 1.75; overflow-x: auto; max-height: 420px; white-space: pre; word-break: break-all; }
+.json-output .key { color: #89b4fa; } .json-output .str { color: #a6e3a1; } .json-output .num { color: #fab387; } .json-output .bool { color: #f38ba8; }
+
+.toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); background: var(--code-bg); color: #fff; padding: 11px 26px; border-radius: 99px; font-size: 13px; font-weight: 600; box-shadow: 0 8px 30px rgba(0,0,0,.25); opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 9999; }
+.toast.show { opacity: 1; }
+.hidden { display: none !important; }
+
+/* ═══ Manual (doc styles) ═══ */
+.doc h2 { font-size: 18px; font-weight: 800; margin: 30px 0 10px; padding-bottom: 8px; border-bottom: 2px solid var(--primary-soft); display: flex; align-items: center; gap: 8px; }
+.doc h2:first-child { margin-top: 0; }
+.doc h2 .sec-num { background: var(--primary); color: #fff; font-size: 12px; padding: 2px 9px; border-radius: 99px; font-weight: 700; }
+.doc h3 { font-size: 14.5px; font-weight: 700; margin: 18px 0 8px; color: var(--primary-hover); }
+.doc p { margin: 8px 0; color: #2d2d3f; }
+.doc ul, .doc ol { margin: 8px 0 8px 22px; }
+.doc li { margin: 4px 0; }
+.doc table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; background: #fff; }
+.doc th { background: #f0f1f7; text-align: left; padding: 9px 12px; border: 1px solid var(--border); font-weight: 700; font-size: 12.5px; }
+.doc td { padding: 8px 12px; border: 1px solid var(--border); vertical-align: top; }
+.doc code { background: #eef0f6; border-radius: 4px; padding: 1.5px 6px; font-family: "JetBrains Mono", Consolas, monospace; font-size: 12.5px; color: #4338ca; }
+.codeblock { background: var(--code-bg); color: #cdd6f4; border-radius: 10px; padding: 14px 18px; font-family: "JetBrains Mono", Consolas, monospace; font-size: 12.5px; line-height: 1.8; margin: 10px 0; overflow-x: auto; white-space: pre; }
+.codeblock .cmt { color: #6c7086; }
+.callout { border-radius: 10px; padding: 13px 16px; margin: 12px 0; font-size: 13px; border-left: 4px solid; }
+.callout-info { background: #eef2ff; border-color: var(--primary); }
+.callout-warn { background: #fffbeb; border-color: var(--warning); }
+.callout-ok { background: #ecfdf5; border-color: var(--success); }
+.callout b { display: block; margin-bottom: 3px; }
+
+.flow { display: flex; align-items: stretch; gap: 0; margin: 16px 0; flex-wrap: wrap; }
+.flow-step { flex: 1; min-width: 130px; background: #fff; border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 14px; position: relative; text-align: center; }
+.flow-step .fs-title { font-weight: 700; font-size: 13px; color: var(--primary); }
+.flow-step .fs-desc { font-size: 11.5px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
+.flow-arrow { display: flex; align-items: center; padding: 0 6px; color: #b6bac4; font-size: 18px; font-weight: 700; }
+
+.toc { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; margin-bottom: 8px; }
+.toc-title { font-weight: 800; font-size: 13px; margin-bottom: 8px; color: var(--text); }
+.toc ol { margin-left: 20px; columns: 2; column-gap: 40px; }
+.toc li { font-size: 13px; margin: 3px 0; }
+.toc a { color: var(--primary); text-decoration: none; }
+.toc a:hover { text-decoration: underline; }
+
+/* scoring detail */
+.dim-criteria td:first-child { font-weight: 700; white-space: nowrap; }
+.crit-5 { color: #047857; } .crit-4 { color: #059669; } .crit-3 { color: #4b5563; } .crit-2 { color: #b45309; } .crit-1 { color: #b91c1c; }
+
+/* dimension editor */
+.dim-card { border: 1.5px solid var(--border); border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; background: #fdfdfe; }
+.dim-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.dim-head .dim-label { font-weight: 800; font-size: 14.5px; }
+.dim-head .dim-id { font-family: Consolas, monospace; font-size: 11.5px; color: var(--text-muted); background: #f0f1f7; padding: 2px 8px; border-radius: 5px; }
+.dim-head .spacer { flex: 1; }
+.kw-row { display: flex; gap: 8px; margin-bottom: 6px; align-items: center; }
+.kw-row .kw-delta { width: 62px; padding: 6px 8px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 12.5px; font-weight: 700; text-align: center; }
+.kw-row .kw-delta.plus { color: #047857; background: #ecfdf5; }
+.kw-row .kw-delta.minus { color: #b91c1c; background: #fef2f2; }
+.kw-row input { flex: 1; padding: 6px 10px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 12.5px; }
+.crit-grid { display: grid; grid-template-columns: 52px 1fr; gap: 6px 10px; align-items: center; margin-top: 8px; }
+.crit-grid .crit-score { font-weight: 800; font-size: 12.5px; text-align: center; padding: 5px 0; border-radius: 6px; }
+details.adv { margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 10px; }
+details.adv summary { cursor: pointer; font-size: 12.5px; font-weight: 700; color: var(--primary); user-select: none; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ═══ Header ═══ -->
+  <div class="header">
+    <div class="header-left">
+      <h1>Competitor Watch · 竞品监测</h1>
+      <div class="subtitle">游戏竞品自动化监测 Skill — 配置面板 &amp; 用户手册（单一配置文件版）</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="sync-dot" id="sync-status"><span class="dot"></span><span id="sync-text">已同步</span></div>
+      <div class="header-actions">
+        <button class="btn btn-outline" onclick="triggerImport()">导入配置</button>
+        <input type="file" id="import-file" accept=".json,application/json" style="display:none" onchange="handleImport(event)">
+        <button class="btn btn-primary" onclick="switchTab('export')">导出配置</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Tabs：用户手册固定为第一个页签 ═══ -->
+  <div class="tabs">
+    <button class="tab active" data-tab="manual">📘 用户手册</button>
+    <button class="tab" data-tab="games">🎮 游戏列表</button>
+    <button class="tab" data-tab="sources">📡 数据源</button>
+    <button class="tab" data-tab="scoring">⚖️ 评分体系</button>
+    <button class="tab" data-tab="publish">📤 报告与发布</button>
+    <button class="tab" data-tab="export">💾 导入 / 导出</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- Tab 1: 用户手册（第一个页签）               -->
+  <!-- ══════════════════════════════════════════ -->
+  <div id="tab-manual" class="tab-content doc">
+    <div class="card">
+
+      <div class="toc">
+        <div class="toc-title">📑 手册目录</div>
+        <ol>
+          <li><a href="#m-what">这是什么</a></li>
+          <li><a href="#m-quick">5 分钟上手</a></li>
+          <li><a href="#m-config">配置详解</a></li>
+          <li><a href="#m-sources">数据源说明</a></li>
+          <li><a href="#m-scoring">评分体系与标准</a></li>
+          <li><a href="#m-reports">报告与发布</a></li>
+          <li><a href="#m-daily">日常使用（AI 指令速查）</a></li>
+          <li><a href="#m-faq">故障排查 FAQ</a></li>
+        </ol>
+      </div>
+
+      <h2 id="m-what"><span class="sec-num">1</span>这是什么</h2>
+      <p><b>Competitor Watch</b> 是一个游戏竞品自动化监测工具：把你关注的竞品游戏配置进一份 JSON，它会自动从多个渠道抓取动态、按多维度规则打分、生成日报/周报/月报，并可推送到腾讯文档或企业微信群。</p>
+      <div class="flow">
+        <div class="flow-step"><div class="fs-title">① 配置</div><div class="fs-desc">一份 JSON 列出竞品<br>（本面板可视化编辑）</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><div class="fs-title">② resolve</div><div class="fs-desc">自动定位各竞品在<br>数据源渠道的入口</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><div class="fs-title">③ ingest</div><div class="fs-desc">多源采集文章/评分<br>SQLite 去重入库</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><div class="fs-title">④ score</div><div class="fs-desc">每篇文章按维度<br>规则打分评级</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><div class="fs-title">⑤ report</div><div class="fs-desc">生成 Markdown 报告<br>可发布到文档/企微</div></div>
+      </div>
+      <ul>
+        <li><b>多渠道</b>：微信公众号、TapTap 评论评分、好游快爆评分公告、官网/官方论坛</li>
+        <li><b>多维度评分</b>：9 个维度 × 权重，关键词规则引擎（无需 LLM），每个维度附 1–5 分判分标准</li>
+        <li><b>多品类</b>：MMO / SLG / 卡牌 / 开放世界 RPG 等，通过竞品的 <code>genre</code> 标签区分</li>
+        <li><b>零第三方依赖</b>：仅需 Python 3.10+，全部脚本只用标准库</li>
+      </ul>
+      <div class="callout callout-info"><b>💡 本工具面向任何 AI 助手</b>
+        手册里的每条命令都是普通 Python 命令。无论你用 Claude、ChatGPT、Gemini、WorkBuddy 还是其他任何 AI 编码助手，把本 skill 目录发给它并引用 <code>SKILL.md</code>，它就能按手册执行。</div>
+
+      <h2 id="m-quick"><span class="sec-num">2</span>5 分钟上手</h2>
+      <h3>前置要求</h3>
+      <ul>
+        <li>Python 3.10 或更高版本（<code>python --version</code> 可验证），无需安装任何第三方包</li>
+        <li>所有命令都在 <b>skill 根目录</b>（即本文件所在目录）下执行</li>
+      </ul>
+      <h3>Step 1 · 准备配置文件</h3>
+      <p>仓库自带一份 MMO 示例配置，复制即可运行：</p>
+      <div class="codeblock"><span class="cmt"># Windows（PowerShell）</span>
+Copy-Item config\mmo-example.json config\competitor-watch.json
+
+<span class="cmt"># macOS / Linux</span>
+cp config/mmo-example.json config/competitor-watch.json</div>
+      <p>也可以直接用<b>本面板</b>：在右侧各页签里编辑，到「导入 / 导出」页签下载 <code>competitor-watch.json</code>，放到 <code>config/</code> 目录下。</p>
+      <h3>Step 2 · 解析竞品入口</h3>
+      <div class="codeblock">python scripts/resolve.py</div>
+      <p>自动为每个竞品定位好游快爆 <code>fid</code>、生成官网/TapTap 占位配置；已在 RSS 服务订阅的公众号会自动匹配 <code>mp_id</code>。</p>
+      <h3>Step 3 · 采集数据</h3>
+      <div class="codeblock">python scripts/ingest.py            <span class="cmt"># 全部数据源</span>
+python scripts/ingest.py --source hykb  <span class="cmt"># 只跑好游快爆（无需任何密钥）</span></div>
+      <div class="callout callout-ok"><b>✅ 好游快爆源开箱即用</b>
+      不配置任何密钥，hykb 源也能抓到每个竞品的评分与更新公告，足够跑通完整流程。微信公众号源需要自建/订阅 RSS 聚合服务（见第 4 节）。</div>
+      <h3>Step 4 · 生成报告</h3>
+      <div class="codeblock">python scripts/report.py daily            <span class="cmt"># 昨天的日报（默认）</span>
+python scripts/report.py daily --date 2026-06-02
+python scripts/report.py weekly             <span class="cmt"># 上周周报</span></div>
+      <p>报告输出到 <code>data/reports/daily|weekly|monthly|yearly/&lt;日期&gt;.md</code>。完成后可用 <code>python scripts/publish.py daily</code> 推送到腾讯文档/企微（需先在配置中开启）。</p>
+      <div class="callout callout-warn"><b>⚠️ 采完数据没有评分？</b>
+      ingest 会在入库后自动打分；如果分数缺失，手动跑一次 <code>python scripts/score.py</code> 即可（幂等，只补未打分的文章）。</div>
+
+      <h2 id="m-config"><span class="sec-num">3</span>配置详解</h2>
+      <p>所有配置集中在<b>一个文件</b>：<code>config/competitor-watch.json</code>。分 5 个节（section）：</p>
+      <table>
+        <tr><th style="width:110px">节</th><th style="width:170px">管什么</th><th>关键字段</th></tr>
+        <tr><td><code>games</code></td><td>竞品列表（你最主要维护的）</td><td>name（唯一）、aliases 别名、genre 品类、priority 优先级、type=industry 行业号</td></tr>
+        <tr><td><code>sources</code></td><td>数据源接入</td><td>wcrss.feed_url 微信 RSS 地址、fetch_defaults 抓取窗口</td></tr>
+        <tr><td><code>scoring</code></td><td>评分体系</td><td>dimensions（含每维度 1–5 分标准 criteria）、weights 权重、tiers 评级档位、mount_points 挂载模块</td></tr>
+        <tr><td><code>publish</code></td><td>发布渠道</td><td>tencent_docs 腾讯文档、wecom_bot 企微机器人、local_backup 本地输出</td></tr>
+        <tr><td><code>report</code></td><td>报告格式</td><td>content_tags 文章分类关键词、limits 长度截断、kind_titles 标题</td></tr>
+      </table>
+      <div class="callout callout-info"><b>💡 三种编辑方式任选</b>
+      ① 用本面板各页签编辑后导出；② 直接用文本编辑器改 JSON；③ 让 AI 助手帮你改（"帮我把原神加进竞品列表"）。改完 games 后记得重跑 <code>resolve.py</code>。</div>
+      <p><b>敏感信息</b>（RSS token、webhook、access_token）优先走环境变量：<code>WCRSS_FEED_URL</code>、<code>TDOC_ACCESS_TOKEN</code>、<code>WECOM_WEBHOOK_URL</code>。<code>config/competitor-watch.json</code> 已被 <code>.gitignore</code> 排除，请勿提交到公开仓库。</p>
+
+      <h2 id="m-sources"><span class="sec-num">4</span>数据源说明</h2>
+      <table>
+        <tr><th style="width:130px">渠道</th><th style="width:110px">自动化程度</th><th style="width:130px">数据类型</th><th>接入方式</th></tr>
+        <tr><td>hykb 好游快爆</td><td><span class="badge badge-ok">全自动</span></td><td>评分 + 更新公告</td><td><code>resolve.py</code> 自动搜索定位 fid，零配置</td></tr>
+        <tr><td>wechat 微信公众号</td><td><span class="badge badge-warn">半自动</span></td><td>文章正文</td><td>需自建/订阅 RSS 聚合服务，把聚合地址填入 <code>sources.wcrss.feed_url</code></td></tr>
+        <tr><td>taptap</td><td><span class="badge badge-warn">半自动</span></td><td>评分 + 评论</td><td>在 <code>config/derived/taptap.json</code> 为每个竞品补 app_id（resolve 会给出搜索链接提示）</td></tr>
+        <tr><td>official 官网/论坛</td><td><span class="badge badge-empty">手动配置</span></td><td>链接快照 / RSS</td><td>在 <code>config/derived/official.json</code> 填 url（支持 rss / CSS selectors）</td></tr>
+      </table>
+      <p><b>新增竞品标准流程</b>：① 改配置 games 数组加一行 → ② <code>python scripts/resolve.py</code> → ③ <code>python scripts/ingest.py</code> → ④ <code>python scripts/report.py daily</code>。RSS 服务新增公众号订阅<b>必须先经你确认</b>，agent 不得自行下单。</p>
+
+      <h2 id="m-scoring"><span class="sec-num">5</span>评分体系与标准</h2>
+      <p>每篇文章按 <b>关键词命中规则</b>在 9 个维度上各打 1–5 分（起始 3 分中性，命中加分词上调、命中减分词下调，再叠加来源倾向），乘以权重求和得到总分，最后按档位（S/A/B/C/D）评级。以下是<b>当前配置</b>的维度与判分标准（随「评分体系」页签的修改实时更新）：</p>
+      <div id="manual-scoring"></div>
+
+      <h2 id="m-reports"><span class="sec-num">6</span>报告与发布</h2>
+      <table>
+        <tr><th style="width:90px">报告</th><th style="width:200px">生成命令</th><th>覆盖范围与内容</th></tr>
+        <tr><td>日报</td><td><code>report.py daily</code></td><td>昨天 00:00–24:00（CST）严格按发布时间过滤；概览 / 摘要（评分分层+分类汇总）/ 原文清单</td></tr>
+        <tr><td>周报</td><td><code>report.py weekly</code></td><td>上周一~周日；日报内容 + TOP 事件 + 评分趋势</td></tr>
+        <tr><td>月报 / 年报</td><td><code>report.py monthly / yearly</code></td><td>上月 / 去年；长周期趋势对比</td></tr>
+        <tr><td>补齐</td><td><code>report.py daily --catch-up 7</code></td><td>补齐过去 7 天缺失的日报，幂等安全</td></tr>
+      </table>
+      <p><b>发布</b>（<code>publish.py</code>）：本地 Markdown 恒开；腾讯文档按 <code>(类型, 日期)</code> 一份独立文档、同日期重跑为覆盖刷新、可按月归档到子文件夹；企微机器人推送摘要卡片，高信号事件 @all。正式推送前建议先 <code>--dry-run</code> 预览。</p>
+
+      <h2 id="m-daily"><span class="sec-num">7</span>日常使用（AI 指令速查）</h2>
+      <p>把下面任意一句话发给你的 AI 助手（需能访问本目录）：</p>
+      <table>
+        <tr><th style="width:260px">你说</th><th>AI 会做</th></tr>
+        <tr><td>"拉一下今天的竞品动态"</td><td>ingest → report daily → 展示高信号事件</td></tr>
+        <tr><td>"出个竞品周报"</td><td>report weekly（自动取上周）</td></tr>
+        <tr><td>"把 XX 加进竞品监测"</td><td>改配置 games → resolve → ingest 验证</td></tr>
+        <tr><td>"竞品评分最近怎么样"</td><td>读 data/reports/ 或跑 score.py 统计</td></tr>
+        <tr><td>"把日报推到腾讯文档"</td><td>publish daily（先 dry-run 确认再推）</td></tr>
+      </table>
+      <p><b>定时节奏建议</b>：每个工作日 12:00 跑 <code>ingest + report daily --catch-up 3 + publish daily --catch-up 3</code>；每周一加跑 weekly；每月 1 日加跑 monthly。</p>
+
+      <h2 id="m-faq"><span class="sec-num">8</span>故障排查 FAQ</h2>
+      <table>
+        <tr><th style="width:220px">症状</th><th>排查步骤</th></tr>
+        <tr><td>ingest 无数据</td><td>检查 <code>config/derived/</code> 各文件是否有有效 id；hykb 源看控制台是否 fid 缺失；wechat 源确认 feed_url 有效</td></tr>
+        <tr><td>报告全空</td><td>该日期确实没有文章属正常；也可查 <code>data/articles.db</code>（sqlite）确认库里有数据</td></tr>
+        <tr><td>评分全是 C/D</td><td>scoring.dimensions 的关键词与你的品类不匹配——在「评分体系」页签调整关键词与权重</td></tr>
+        <tr><td>publish 报错</td><td>腾讯文档：检查 token 过期 / root_folder_id；企微：检查 webhook URL 是否有效</td></tr>
+        <tr><td>公众号 missing</td><td>去 RSS 服务后台添加订阅 → 重跑 <code>resolve.py</code>（订阅操作需你本人确认）</td></tr>
+        <tr><td>想改报告版式</td><td>编辑配置 <code>report</code> 节（章节顺序、分类关键词、标题文案），即时生效</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══ Tab: Games ═══ -->
+  <div id="tab-games" class="tab-content hidden">
+    <div class="card">
+      <div class="card-title"><span class="icon">🎮</span>竞品游戏列表</div>
+      <div class="card-desc">写入统一配置的 <code>games</code> 节。增删竞品、品类标签、优先级；行业媒体号选「行业号」类型（评分自动降权、不抓渠道评分）。改完导出并覆盖 config/competitor-watch.json 后，记得跑 <code>python scripts/resolve.py</code>。</div>
+
+      <div class="stat-row">
+        <div class="stat"><div class="num" id="stat-total">0</div><div class="label">总数</div></div>
+        <div class="stat"><div class="num" id="stat-high">0</div><div class="label">高优先级</div></div>
+        <div class="stat"><div class="num" id="stat-industry">0</div><div class="label">行业号</div></div>
+      </div>
+
+      <div class="add-form">
+        <div style="flex:1;min-width:140px"><label>名称</label><input type="text" id="new-game-name" placeholder="竞品名称（唯一）"></div>
+        <div style="width:130px"><label>品类</label><select id="new-game-genre">
+          <option value="mmo">MMO/仙侠</option><option value="slg">SLG/策略</option>
+          <option value="open_world_rpg">开放世界RPG</option><option value="card">卡牌</option>
+          <option value="idle">放置/休闲</option><option value="fps">FPS/射击</option>
+          <option value="moba">MOBA</option><option value="casual">休闲/超休</option><option value="">不指定</option>
+        </select></div>
+        <div style="width:95px"><label>优先级</label><select id="new-game-priority">
+          <option value="high">High</option><option value="normal" selected>Normal</option><option value="low">Low</option>
+        </select></div>
+        <div style="flex:1;min-width:150px"><label>别名 <span class="hint">逗号分隔</span></label><input type="text" id="new-game-aliases" placeholder="如 nshm, 逆水寒"></div>
+        <button class="btn btn-primary btn-sm" onclick="addGame()">添加</button>
+      </div>
+      <div style="display:flex; gap:16px; margin-bottom:4px">
+        <label style="font-size:13px;font-weight:400"><input type="radio" name="gt" value="game" checked> 游戏竞品</label>
+        <label style="font-size:13px;font-weight:400"><input type="radio" name="gt" value="industry"> 行业号（媒体）</label>
+      </div>
+
+      <div class="divider"></div>
+      <div id="game-list"></div>
+    </div>
+  </div>
+
+  <!-- ═══ Tab: Sources ═══ -->
+  <div id="tab-sources" class="tab-content hidden">
+    <div class="card">
+      <div class="card-title"><span class="icon">📡</span>微信公众号 RSS 服务</div>
+      <div class="card-desc">写入统一配置 <code>sources</code> 节。需要一个聚合你所有公众号订阅的 RSS 服务（如自建 wechat2rss / wewe-rss 等），把聚合 Feed 地址（含 token）填入。环境变量 <code>WCRSS_FEED_URL</code> 优先级更高。留空则跳过微信源，其余源不受影响。</div>
+      <div class="form-row">
+        <label>RSS Feed URL <span class="hint">聚合订阅的完整地址</span></label>
+        <input type="text" id="wcrss_feed_url" placeholder="https://your-rss-service.com/api/rss/all?token=YOUR_TOKEN" onchange="onSourcesChange()">
+      </div>
+      <div class="form-hgrid">
+        <div class="form-row">
+          <label>抓取回看天数</label>
+          <input type="number" id="fetch_recent_days" value="3" min="1" max="30" onchange="onSourcesChange()">
+        </div>
+        <div class="form-row">
+          <label>单次抓取上限</label>
+          <input type="number" id="fetch_num" value="50" min="1" max="200" onchange="onSourcesChange()">
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">ℹ️</span>其余数据源</div>
+      <div class="card-desc">TapTap / 好游快爆 / 官网的入口配置由 <code>resolve.py</code> 自动维护在 <code>config/derived/</code> 目录，无需在本面板填写。好游快爆全自动；TapTap 需按提示补 app_id；官网需在 derived/official.json 里补 URL。详见「用户手册」第 4 节。</div>
+    </div>
+  </div>
+
+  <!-- ═══ Tab: Scoring ═══ -->
+  <div id="tab-scoring" class="tab-content hidden">
+    <div class="card">
+      <div class="card-title"><span class="icon">⚖️</span>评分维度 <span class="badge badge-ok" id="dim-count-badge"></span></div>
+      <div class="card-desc">写入统一配置 <code>scoring.dimensions</code>。每个维度包含：名称、ID、权重（0–3）、衡量说明（desc）、<b>1–5 分判分标准</b>（criteria，供人工核对与 AI 理解）、加分/减分关键词（引擎实际打分依据）。维度数量可自由增减，脚本自动适配。</div>
+
+      <details class="adv" open>
+        <summary>➕ 添加新维度</summary>
+        <div class="add-form" style="margin-top:10px">
+          <div style="flex:1;min-width:120px"><label>ID <span class="hint">如 J_ip_value</span></label><input type="text" id="new-dim-id" placeholder="J_new_dim"></div>
+          <div style="flex:1;min-width:130px"><label>中文名</label><input type="text" id="new-dim-label" placeholder="如 IP价值"></div>
+          <div style="width:80px"><label>权重</label><input type="number" id="new-dim-weight" value="1.0" step="0.1" min="0" max="3"></div>
+          <button class="btn btn-primary btn-sm" onclick="addDimension()">添加</button>
+        </div>
+      </details>
+
+      <div class="divider"></div>
+      <div id="dim-list"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">📊</span>评级档位（Tiers）</div>
+      <div class="card-desc">总分（各维度得分×权重之和）落到哪一档。档位名与阈值可自定义，报告与评分脚本自动适配。</div>
+      <div class="add-form">
+        <div style="width:64px"><label>档位</label><input type="text" id="new-tier-name" placeholder="S" maxlength="3"></div>
+        <div style="width:90px"><label>最低分 ≥</label><input type="number" id="new-tier-min" value="0" min="0"></div>
+        <div style="flex:1;min-width:180px"><label>说明</label><input type="text" id="new-tier-label" placeholder="如 强烈推荐"></div>
+        <button class="btn btn-primary btn-sm" onclick="addTier()">添加</button>
+      </div>
+      <div class="divider"></div>
+      <div id="tier-list"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">🧩</span>挂载模块（自家产品清单）</div>
+      <div class="card-desc">你的产品有哪些现成可挂载的系统？用于「玩法可迁移性」维度对照：竞品玩法能直接挂到这些模块上，该维度即给高分。</div>
+      <div class="add-form">
+        <div style="flex:1;min-width:200px"><label>模块名称</label><input type="text" id="new-module-name" placeholder="如 活动模块、签到日历"></div>
+        <button class="btn btn-primary btn-sm" onclick="addModule()">添加</button>
+      </div>
+      <div class="divider"></div>
+      <div id="module-list"></div>
+    </div>
+  </div>
+
+  <!-- ═══ Tab: Publish ═══ -->
+  <div id="tab-publish" class="tab-content hidden">
+    <div class="card">
+      <div class="card-title"><span class="icon">💾</span>本地输出 <span class="badge badge-ok">默认开启</span></div>
+      <div class="card-desc">报告以 Markdown 保存到本地目录，由 report.py 直接写入，永远可用。</div>
+      <div class="form-row">
+        <label>启用 <input type="checkbox" id="local_enabled" checked onchange="onPublishChange()" style="width:auto"></label>
+      </div>
+      <div class="form-row">
+        <label>输出目录 <span class="hint">相对 skill 根目录</span></label>
+        <input type="text" id="local_dir" value="data/reports" onchange="onPublishChange()">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">⏰</span>报告默认参数</div>
+      <div class="form-hgrid">
+        <div class="form-row">
+          <label>时区</label>
+          <select id="report_timezone" onchange="onPublishChange()">
+            <option value="Asia/Shanghai">Asia/Shanghai (UTC+8)</option>
+            <option value="UTC">UTC</option>
+            <option value="Asia/Tokyo">Asia/Tokyo (UTC+9)</option>
+            <option value="Asia/Singapore">Asia/Singapore (UTC+8)</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>单源最大文章数</label>
+          <input type="number" id="report_max_articles" value="20" min="1" max="100" onchange="onPublishChange()">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">📄</span>腾讯文档 <span class="badge badge-empty">可选</span></div>
+      <div class="card-desc">报告自动发布为在线文档：每期一份、同日期重跑覆盖刷新、可按月归档。Token 优先读环境变量 <code>TDOC_ACCESS_TOKEN</code>。</div>
+      <div class="form-row">
+        <label>启用 <input type="checkbox" id="tdoc_enabled" onchange="onPublishChange()" style="width:auto"></label>
+      </div>
+      <div class="form-hgrid">
+        <div class="form-row">
+          <label>API Endpoint</label>
+          <input type="text" id="tdoc_endpoint" value="https://docs.qq.com/openapi/mcp" onchange="onPublishChange()">
+        </div>
+        <div class="form-row">
+          <label>根文件夹 ID <span class="hint">留空 = 不归档</span></label>
+          <input type="text" id="tdoc_root_folder" placeholder="腾讯文档文件夹 ID" onchange="onPublishChange()">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">💬</span>企业微信群机器人 <span class="badge badge-empty">可选</span></div>
+      <div class="card-desc">群设置 → 添加群机器人 → 复制 Webhook URL。高信号事件（评分骤降、版本上线、集中差评）可 @all。</div>
+      <div class="form-row">
+        <label>启用 <input type="checkbox" id="wecom_enabled" onchange="onPublishChange()" style="width:auto"></label>
+      </div>
+      <div class="form-row">
+        <label>Webhook URL</label>
+        <input type="text" id="wecom_webhook" placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=YOUR_KEY" onchange="onPublishChange()">
+      </div>
+      <div class="form-row">
+        <label>摘要最大字符数</label>
+        <input type="number" id="wecom_max_chars" value="1500" min="500" max="3500" onchange="onPublishChange()">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">🧾</span>报告格式（高级）</div>
+      <div class="card-desc">统一配置 <code>report</code> 节的原始 JSON（文章分类关键词、长度截断、章节顺序、标题文案等）。可直接编辑，保存前会校验 JSON 合法性。不熟悉可保持默认。</div>
+      <div class="form-row">
+        <textarea id="report_format_json" rows="12" style="font-family:Consolas,monospace;font-size:12px" onchange="onReportFormatEdit()"></textarea>
+      </div>
+      <div id="report-format-msg" style="font-size:12px"></div>
+    </div>
+  </div>
+
+  <!-- ═══ Tab: Export ═══ -->
+  <div id="tab-export" class="tab-content hidden">
+    <div class="card">
+      <div class="card-title"><span class="icon">💾</span>导出统一配置</div>
+      <div class="card-desc">下载 <b>competitor-watch.json</b>（唯一配置文件），放到 skill 的 <code>config/</code> 目录覆盖原文件即可生效。敏感字段请勿提交到代码仓库。</div>
+      <button class="btn btn-primary" onclick="downloadUnified()" style="width:100%;justify-content:center">⬇ 下载 competitor-watch.json</button>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">👁️</span>JSON 预览</div>
+      <div class="json-output" id="preview-unified"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">📥</span>导入说明</div>
+      <div class="card-desc">
+        支持导入：① <b>统一配置</b> competitor-watch.json / mmo-example.json；② 旧版拆分文件（games.json、scoring.json、publish.json、config.json、report_format.json）；③ 旧版配置面板导出的合并备份。导入后自动填充到各页签，确认无误后导出即可完成迁移。
+      </div>
+    </div>
+  </div>
+
+</div><!-- end container -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════ State（镜像统一配置 schema）═══════════════
+const STORAGE_KEY = 'competitor-watch-config-v2';
+
+function defaultState() {
+  return {
+    games: [],
+    sources: { wcrss: { feed_url: '' }, fetch_defaults: { recent_days: 3, num: 50 } },
+    scoring: {
+      weights: {}, tiers: {}, dimensions: {},
+      source_weight_bias: { official:{A_strategy_fit:0.5,I_risk_inverse:0.5}, wechat:{H_voice:0.5}, hykb:{B_user_match:0.3}, taptap:{B_user_match:0.3,H_voice:0.3} },
+      industry_filter: { demote_score: -3 },
+      mount_points: { modules: [] }
+    },
+    publish: {
+      tencent_docs: { enabled:false, endpoint:'https://docs.qq.com/openapi/mcp', access_token:'', root_folder_id:'', month_folders:{}, doc_ids:{daily:{},weekly:{},monthly:{},yearly:{}}, doc_urls:{daily:{},weekly:{},monthly:{},yearly:{}}, title_template:{daily:'竞品日报 {label}',weekly:'竞品周报 {label}',monthly:'竞品月报 {label}',yearly:'竞品年报 {label}'} },
+      wecom_bot: { enabled:false, webhook_url:'', summary_max_chars:1500, mention_on_high_signal:true },
+      local_backup: { enabled:true, dir:'data/reports' }
+    },
+    report: {
+      defaults: { timezone:'Asia/Shanghai', max_articles_per_source:20 },
+      content_tags: {}, source_labels: {wechat:'微信公众号',official:'官方论坛/官网',hykb:'好游快爆',taptap:'TapTap 评论'},
+      limits: { summary_titles_per_competitor:8, summary_description_chars:80, raw_description_chars:160, competitor_top_tags:3 },
+      section_order: { default:['overview','summary','raw'] },
+      section_titles: { overview:'## 概览', summary:'## 摘要', raw:'## 📆 {kind_zh} 原文清单（按 publish_time 严格过滤）' },
+      kind_titles: { daily:'竞品日报', weekly:'竞品周报', monthly:'竞品月报', yearly:'竞品年报' },
+      dirty_marker: { header_template:'', marker_html:'<!-- competitor-watch-status: dirty -->', marker_regex:'competitor-watch-status:\\s*dirty' },
+      empty_message: ''
+    }
+  };
+}
+
+let state = defaultState();
+
+const GENRE_LABELS = { mmo:"MMO/仙侠", slg:"SLG/策略", open_world_rpg:"开放世界RPG", card:"卡牌", idle:"放置/休闲", fps:"FPS/射击", moba:"MOBA", casual:"休闲/超休" };
+const TIER_COLORS = { S:'#d1fae5/#065f46', A:'#dbeafe/#1d4ed8', B:'#fef3c7/#92400e', C:'#f3f4f6/#4b5563', D:'#fee2e2/#dc2626' };
+
+// ═══════════════ Auto-save ═══════════════
+let saveTimer = null;
+function autoSave() {
+  const el = document.getElementById('sync-status');
+  const txt = document.getElementById('sync-text');
+  el.classList.add('saving'); txt.textContent = '保存中...';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      el.classList.remove('saving'); txt.textContent = '已同步';
+    } catch(e) { txt.textContent = '存储失败'; }
+  }, 400);
+}
+
+// ═══════════════ Tab switching ═══════════════
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+  const target = document.getElementById('tab-' + name);
+  if (target) target.classList.remove('hidden');
+  if (name === 'export') document.getElementById('preview-unified').innerHTML = syntaxHighlight(buildUnified());
+  if (name === 'manual') renderManualScoring();
+  if (name === 'publish') syncReportFormatTextarea();
+  window.scrollTo({ top: 0 });
+}
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ═══════════════ Helpers ═══════════════
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;').replace(/"/g,'&quot;'); }
+function gv(id){ return document.getElementById(id)?.value ?? ''; }
+function ni(id,d){ return parseInt(document.getElementById(id)?.value)||d; }
+function cb(id){ return document.getElementById(id)?.checked||false; }
+function sv(id,val){ const el=document.getElementById(id); if(el) el.value=val; }
+
+function syntaxHighlight(json){
+  let s = JSON.stringify(json, null, 2);
+  s = s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return s.replace(/("(\\u[\da-fA-F]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+\.?\d*)/g, m => {
+    let c='num'; if(/^"/.test(m)) c=/:$/.test(m)?'key':'str'; else if(/true|false/.test(m)) c='bool';
+    return '<span class="'+c+'">'+m+'</span>';
+  });
+}
+
+// ═══════════════ Build unified JSON ═══════════════
+function buildUnified() {
+  const dims = {};
+  Object.entries(state.scoring.dimensions).forEach(([id, d]) => {
+    dims[id] = {
+      label: d.label || id,
+      desc: d.desc || '',
+      criteria: d.criteria || {},
+      boost: d.boost || {},
+      penalty: d.penalty || {}
+    };
+  });
+  return {
+    _meta: {
+      _doc: "竞品监测统一配置（schema v2.0）。所有配置集中在这一个文件。可用根目录 config-wizard.html 可视化编辑。敏感字段请勿提交到代码仓库。",
+      schema_version: "2.0"
+    },
+    games: {
+      _schema: { name:"中文显示名（必填唯一）", type:"game|industry", aliases:"搜索别名", priority:"high|normal|low", genre:"品类标签", notes:"备注" },
+      games: state.games.map(g => {
+        const o = { name: g.name, aliases: g.aliases || [] };
+        if (g.genre) o.genre = g.genre;
+        o.priority = g.priority || 'normal';
+        if (g.type === 'industry') o.type = 'industry';
+        if (g.notes) o.notes = g.notes;
+        return o;
+      })
+    },
+    sources: {
+      _doc: "数据源配置。wcrss 为微信公众号 RSS 聚合服务；环境变量 WCRSS_FEED_URL 优先。",
+      wcrss: { feed_url: state.sources.wcrss.feed_url || '' },
+      fetch_defaults: { recent_days: state.sources.fetch_defaults.recent_days, num: state.sources.fetch_defaults.num }
+    },
+    scoring: {
+      _doc: "多维度评估打分配置。每维度 1-5 分（起始 3 分），关键词命中调整，加权求和。dimensions 内含 label/desc/criteria（1-5 分判分标准）与 boost/penalty 关键词。",
+      _version: "v2.0",
+      weights: Object.fromEntries(Object.entries(state.scoring.dimensions).map(([id,d]) => [id, Number(d.weight) || 1.0])),
+      tiers: state.scoring.tiers,
+      dimensions: dims,
+      source_weight_bias: state.scoring.source_weight_bias,
+      industry_filter: state.scoring.industry_filter,
+      mount_points: state.scoring.mount_points
+    },
+    publish: state.publish,
+    report: state.report
+  };
+}
+
+function downloadUnified() {
+  const data = buildUnified();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'competitor-watch.json';
+  a.click();
+  toast('已下载 competitor-watch.json → 放入 config/ 目录覆盖即可');
+}
+
+// ═══════════════ Games ═══════════════
+function addGame() {
+  const name = gv('new-game-name').trim();
+  if (!name) return toast('请输入名称');
+  if (state.games.find(g => g.name === name)) return toast('已存在同名游戏');
+  const aliases = gv('new-game-aliases').trim();
+  state.games.push({
+    name,
+    genre: gv('new-game-genre'),
+    priority: gv('new-game-priority'),
+    aliases: aliases ? aliases.split(/[,，]/).map(s=>s.trim()).filter(Boolean) : [],
+    type: document.querySelector('input[name="gt"]:checked').value
+  });
+  sv('new-game-name',''); sv('new-game-aliases','');
+  renderGames(); autoSave(); toast('已添加 ' + name);
+}
+
+function removeGame(name) {
+  state.games = state.games.filter(g => g.name !== name);
+  renderGames(); autoSave(); toast('已移除');
+}
+
+function renderGames() {
+  const c = document.getElementById('game-list');
+  c.innerHTML = '';
+  const order = { high: 0, normal: 1, low: 2 };
+  const sorted = [...state.games].sort((a,b) => {
+    if (order[a.priority] !== order[b.priority]) return order[a.priority] - order[b.priority];
+    return a.name.localeCompare(b.name, 'zh');
+  });
+  sorted.forEach(g => {
+    const div = document.createElement('div');
+    div.className = 'list-item';
+    const gl = GENRE_LABELS[g.genre] || '';
+    div.innerHTML = `
+      <div class="item-name">${escHtml(g.name)}</div>
+      ${gl ? '<span class="genre-tag">'+escHtml(gl)+'</span>' : ''}
+      <div class="item-meta">${(g.aliases||[]).length ? '别名: '+g.aliases.map(escHtml).join(', ') : (g.notes?escHtml(g.notes):'')}</div>
+      <span class="priority-tag ph-${g.priority||'normal'}">${(g.priority||'normal').toUpperCase()}</span>
+      ${g.type==='industry' ? '<span class="badge badge-warn">行业号</span>' : ''}
+      <div class="item-actions">
+        <button class="btn btn-sm btn-ghost" onclick="removeGame('${escHtml(g.name)}')">删除</button>
+      </div>`;
+    c.appendChild(div);
+  });
+  document.getElementById('stat-total').textContent = state.games.length;
+  document.getElementById('stat-high').textContent = state.games.filter(g=>g.priority==='high').length;
+  document.getElementById('stat-industry').textContent = state.games.filter(g=>g.type==='industry').length;
+}
+
+// ═══════════════ Sources ═══════════════
+function syncSourcesInputs() {
+  sv('wcrss_feed_url', state.sources.wcrss.feed_url || '');
+  sv('fetch_recent_days', state.sources.fetch_defaults.recent_days);
+  sv('fetch_num', state.sources.fetch_defaults.num);
+}
+function onSourcesChange() {
+  state.sources.wcrss.feed_url = gv('wcrss_feed_url').trim();
+  state.sources.fetch_defaults.recent_days = ni('fetch_recent_days', 3);
+  state.sources.fetch_defaults.num = ni('fetch_num', 50);
+  autoSave();
+}
+
+// ═══════════════ Scoring: dimensions ═══════════════
+function addDimension() {
+  const id = gv('new-dim-id').trim();
+  const label = gv('new-dim-label').trim();
+  const weight = parseFloat(gv('new-dim-weight')) || 1.0;
+  if (!id || !label) return toast('请填写 ID 和中文名');
+  if (state.scoring.dimensions[id]) return toast('已存在同 ID 维度');
+  state.scoring.dimensions[id] = { label, weight, desc: '', criteria: {5:'',4:'',3:'',2:'',1:''}, boost: {}, penalty: {} };
+  sv('new-dim-id',''); sv('new-dim-label',''); sv('new-dim-weight','1.0');
+  renderDimensions(); autoSave(); toast('已添加维度 ' + label + '，请补全评分标准');
+}
+
+function removeDimension(id) {
+  delete state.scoring.dimensions[id];
+  renderDimensions(); autoSave(); toast('已移除');
+}
+
+function updateDim(id, field, value) {
+  const d = state.scoring.dimensions[id];
+  if (!d) return;
+  if (field === 'weight') d.weight = parseFloat(value) || 0;
+  else if (field === 'label') d.label = value;
+  else if (field === 'desc') d.desc = value;
+  else if (field.startsWith('crit:')) d.criteria[field.slice(5)] = value;
+  else if (field.startsWith('kw:')) {
+    // kw:<group>:<delta>  group=boost|penalty
+    const [, group, delta] = field.split(':');
+    const kws = value.split(/[,，]/).map(s=>s.trim()).filter(Boolean);
+    if (!d[group]) d[group] = {};
+    if (kws.length) d[group][delta] = kws; else delete d[group][delta];
+  }
+  autoSave();
+}
+
+function addKwRow(id, group) {
+  const d = state.scoring.dimensions[id];
+  if (!d) return;
+  const delta = group === 'boost' ? '+1' : '-1';
+  if (!d[group]) d[group] = {};
+  d[group][delta] = d[group][delta] || [];
+  renderDimensions(); autoSave();
+}
+
+function removeKwRow(id, group, delta) {
+  const d = state.scoring.dimensions[id];
+  if (!d || !d[group]) return;
+  delete d[group][delta];
+  renderDimensions(); autoSave();
+}
+
+function renderDimensions() {
+  const c = document.getElementById('dim-list');
+  c.innerHTML = '';
+  const entries = Object.entries(state.scoring.dimensions);
+  document.getElementById('dim-count-badge').textContent = entries.length + ' 个维度';
+  entries.forEach(([id, d]) => {
+    const card = document.createElement('div');
+    card.className = 'dim-card';
+
+    const critRows = [5,4,3,2,1].map(s =>
+      `<div class="crit-score crit-${s}">${s} 分</div><input type="text" value="${escHtml(d.criteria?.[s]||'')}" placeholder="${s} 分的判定标准…" onchange="updateDim('${escHtml(id)}','crit:${s}',this.value)">`
+    ).join('');
+
+    const kwRows = (group) => {
+      const obj = d[group] || {};
+      const sign = group === 'boost' ? '+' : '-';
+      let html = Object.entries(obj).map(([delta, kws]) => `
+        <div class="kw-row">
+          <div class="kw-delta ${group==='boost'?'plus':'minus'}">${escHtml(delta)}</div>
+          <input type="text" value="${escHtml((kws||[]).join(', '))}" placeholder="关键词，逗号分隔" onchange="updateDim('${escHtml(id)}','kw:${group}:${escHtml(delta)}',this.value)">
+          <button class="btn btn-sm btn-ghost" onclick="removeKwRow('${escHtml(id)}','${group}','${escHtml(delta)}')">✕</button>
+        </div>`).join('');
+      html += `<button class="btn btn-sm btn-outline" onclick="addKwRow('${escHtml(id)}','${group}')">+ ${group==='boost'?'加分组':'减分组'}</button>`;
+      return html;
+    };
+
+    card.innerHTML = `
+      <div class="dim-head">
+        <span class="dim-label">${escHtml(d.label || id)}</span>
+        <span class="dim-id">${escHtml(id)}</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <label style="font-size:12px;font-weight:600;color:var(--text-muted)">权重</label>
+          <input type="number" step="0.1" min="0" max="3" value="${d.weight ?? 1}" style="width:64px;padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px" onchange="updateDim('${escHtml(id)}','weight',this.value)">
+        </div>
+        <span class="spacer"></span>
+        <button class="btn btn-sm btn-ghost" onclick="removeDimension('${escHtml(id)}')">删除维度</button>
+      </div>
+      <div class="form-row" style="margin:10px 0 0">
+        <label>衡量说明 <span class="hint">这个维度衡量什么（一句话）</span></label>
+        <input type="text" value="${escHtml(d.desc||'')}" placeholder="如：该动态与自家产品核心方向的匹配程度" onchange="updateDim('${escHtml(id)}','desc',this.value)">
+      </div>
+      <div class="crit-grid">${critRows}</div>
+      <details class="adv">
+        <summary>🎯 加分 / 减分关键词（引擎实际打分依据）</summary>
+        <div style="margin-top:10px">
+          <div style="font-size:12.5px;font-weight:700;color:#047857;margin-bottom:4px">加分关键词（delta 如 +2 / +1）</div>
+          ${kwRows('boost')}
+          <div style="font-size:12.5px;font-weight:700;color:#b91c1c;margin:10px 0 4px">减分关键词（delta 如 -2 / -1）</div>
+          ${kwRows('penalty')}
+        </div>
+      </details>`;
+    c.appendChild(card);
+  });
+}
+
+// ═══════════════ Scoring: tiers & modules ═══════════════
+function addTier() {
+  const name = gv('new-tier-name').trim().toUpperCase();
+  const min = parseInt(gv('new-tier-min')) || 0;
+  const label = gv('new-tier-label').trim();
+  if (!name) return toast('请填写档位名');
+  if (state.scoring.tiers[name]) return toast('已存在同档位');
+  state.scoring.tiers[name] = { min, label };
+  sv('new-tier-name',''); sv('new-tier-min','0'); sv('new-tier-label','');
+  renderTiers(); autoSave(); toast('已添加档位 ' + name);
+}
+function removeTier(name) {
+  delete state.scoring.tiers[name];
+  renderTiers(); autoSave();
+}
+function updateTier(name, val) {
+  if (state.scoring.tiers[name]) state.scoring.tiers[name].min = parseInt(val) || 0;
+  autoSave();
+}
+function renderTiers() {
+  const c = document.getElementById('tier-list');
+  c.innerHTML = '';
+  const sorted = Object.entries(state.scoring.tiers).sort((a,b) => b[1].min - a[1].min);
+  sorted.forEach(([name, t]) => {
+    const div = document.createElement('div');
+    div.className = 'list-item';
+    const colors = TIER_COLORS[name] || '#f3f4f6/#4b5563';
+    const [bg, text] = colors.split('/');
+    div.innerHTML = `
+      <span class="badge" style="background:${bg};color:${text};min-width:34px;justify-content:center;font-size:13px">${escHtml(name)}</span>
+      <div style="display:flex;align-items:center;gap:6px">
+        <label style="font-size:12px;font-weight:600;color:var(--text-muted)">≥</label>
+        <input type="number" min="0" value="${t.min}" style="width:64px;padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px" onchange="updateTier('${escHtml(name)}',this.value)">
+      </div>
+      <div class="item-meta">${escHtml(t.label||'')}</div>
+      <div class="item-actions"><button class="btn btn-sm btn-ghost" onclick="removeTier('${escHtml(name)}')">删除</button></div>`;
+    c.appendChild(div);
+  });
+}
+
+function addModule() {
+  const name = gv('new-module-name').trim();
+  if (!name) return toast('请输入模块名称');
+  if (state.scoring.mount_points.modules.includes(name)) return toast('已存在');
+  state.scoring.mount_points.modules.push(name);
+  sv('new-module-name','');
+  renderModules(); autoSave();
+}
+function removeModule(name) {
+  state.scoring.mount_points.modules = state.scoring.mount_points.modules.filter(m => m !== name);
+  renderModules(); autoSave();
+}
+function renderModules() {
+  const c = document.getElementById('module-list');
+  c.innerHTML = '';
+  (state.scoring.mount_points.modules || []).forEach(m => {
+    const div = document.createElement('div');
+    div.className = 'list-item';
+    div.innerHTML = `
+      <div class="item-name">🧩 ${escHtml(m)}</div>
+      <div class="item-meta">挂载模块</div>
+      <div class="item-actions"><button class="btn btn-sm btn-ghost" onclick="removeModule('${escHtml(m)}')">删除</button></div>`;
+    c.appendChild(div);
+  });
+}
+
+// ═══════════════ Publish ═══════════════
+function syncPublishInputs() {
+  const p = state.publish;
+  document.getElementById('local_enabled').checked = p.local_backup.enabled;
+  sv('local_dir', p.local_backup.dir);
+  document.getElementById('tdoc_enabled').checked = p.tencent_docs.enabled;
+  sv('tdoc_endpoint', p.tencent_docs.endpoint);
+  sv('tdoc_root_folder', p.tencent_docs.root_folder_id || '');
+  document.getElementById('wecom_enabled').checked = p.wecom_bot.enabled;
+  sv('wecom_webhook', p.wecom_bot.webhook_url || '');
+  sv('wecom_max_chars', p.wecom_bot.summary_max_chars || 1500);
+  sv('report_timezone', state.report.defaults.timezone || 'Asia/Shanghai');
+  sv('report_max_articles', state.report.defaults.max_articles_per_source || 20);
+}
+function onPublishChange() {
+  state.publish.local_backup.enabled = cb('local_enabled');
+  state.publish.local_backup.dir = gv('local_dir');
+  state.publish.tencent_docs.enabled = cb('tdoc_enabled');
+  state.publish.tencent_docs.endpoint = gv('tdoc_endpoint');
+  state.publish.tencent_docs.root_folder_id = gv('tdoc_root_folder').trim();
+  state.publish.wecom_bot.enabled = cb('wecom_enabled');
+  state.publish.wecom_bot.webhook_url = gv('wecom_webhook').trim();
+  state.publish.wecom_bot.summary_max_chars = ni('wecom_max_chars', 1500);
+  state.report.defaults.timezone = gv('report_timezone');
+  state.report.defaults.max_articles_per_source = ni('report_max_articles', 20);
+  autoSave();
+}
+
+// report format advanced textarea
+function syncReportFormatTextarea() {
+  const el = document.getElementById('report_format_json');
+  if (el && document.activeElement !== el) el.value = JSON.stringify(state.report, null, 2);
+}
+function onReportFormatEdit() {
+  const el = document.getElementById('report_format_json');
+  const msg = document.getElementById('report-format-msg');
+  try {
+    const parsed = JSON.parse(el.value);
+    if (typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('顶层必须是对象');
+    state.report = parsed;
+    msg.innerHTML = '<span style="color:var(--success)">✓ JSON 合法，已保存</span>';
+    autoSave();
+  } catch (e) {
+    msg.innerHTML = '<span style="color:var(--danger)">✗ JSON 解析失败：' + escHtml(e.message) + '（未保存）</span>';
+  }
+}
+
+// ═══════════════ Manual: 动态渲染评分标准 ═══════════════
+function renderManualScoring() {
+  const c = document.getElementById('manual-scoring');
+  if (!c) return;
+  const s = state.scoring;
+  const tierOrder = Object.entries(s.tiers).sort((a,b) => b[1].min - a[1].min);
+  const tierLine = tierOrder.map(([n,t]) => `<b>${escHtml(n)}</b> ≥${t.min} ${escHtml(t.label||'')}`).join(' ｜ ');
+  const maxScore = Object.values(s.dimensions).reduce((acc, d) => acc + (Number(d.weight)||0) * 5, 0);
+
+  let html = `<div class="callout callout-info"><b>当前评分体系：${Object.keys(s.dimensions).length} 个维度 · 满分 ${maxScore.toFixed(1)} · 档位 ${tierLine}</b>
+  档位与权重可在「评分体系」页签调整，此处说明随之更新。</div>`;
+  html += '<table class="dim-criteria"><tr><th style="width:150px">维度（权重）</th><th>衡量什么</th><th style="width:46%">1–5 分判分标准</th></tr>';
+  Object.entries(s.dimensions).forEach(([id, d]) => {
+    const crit = [5,4,3,2,1].map(n => {
+      const t = d.criteria?.[n];
+      return t ? `<div class="crit-${n}"><b>${n}分</b> — ${escHtml(t)}</div>` : '';
+    }).filter(Boolean).join('');
+    html += `<tr>
+      <td><b>${escHtml(d.label||id)}</b><br><span style="color:var(--text-muted);font-size:11.5px">×${d.weight ?? 1}</span></td>
+      <td>${escHtml(d.desc||'—')}</td>
+      <td>${crit || '<span style="color:var(--text-muted)">未设置（可在「评分体系」页签补充）</span>'}</td>
+    </tr>`;
+  });
+  html += '</table>';
+  c.innerHTML = html;
+}
+
+// ═══════════════ Import（统一 / 旧拆分 / 旧面板备份）═══════════════
+function triggerImport(){ document.getElementById('import-file').click(); }
+
+function applyUnified(doc) {
+  if (doc.games?.games && Array.isArray(doc.games.games)) {
+    state.games = doc.games.games.map(g => ({
+      name: g.name, aliases: g.aliases||[], genre: g.genre||'',
+      priority: g.priority||'normal', type: g.type||'game', notes: g.notes||''
+    }));
+  }
+  if (doc.sources) {
+    state.sources = {
+      wcrss: { feed_url: doc.sources.wcrss?.feed_url || doc.sources.wcrss?.wcrss_feed_url || '' },
+      fetch_defaults: doc.sources.fetch_defaults || { recent_days:3, num:50 }
+    };
+  }
+  if (doc.scoring) {
+    // 统一格式：dimensions 为对象
+    state.scoring = {
+      weights: doc.scoring.weights || {},
+      tiers: doc.scoring.tiers || {},
+      dimensions: doc.scoring.dimensions || {},
+      source_weight_bias: doc.scoring.source_weight_bias || state.scoring.source_weight_bias,
+      industry_filter: doc.scoring.industry_filter || state.scoring.industry_filter,
+      mount_points: doc.scoring.mount_points || { modules: [] }
+    };
+    // 兼容旧版仅有 weights（无 dimensions 详情）：用默认 label 填充骨架
+    const fallbackLabels = {
+      A_strategy_fit:'战略契合度', B_user_match:'用户匹配度', C_portability:'玩法可迁移性',
+      D_cost_inverse:'实施成本(反向)', E_cycle_fit:'周期合理性', F_differentiation:'差异化潜力',
+      G_pay_drive:'付费拉动力', H_voice:'用户声量', I_risk_inverse:'风险等级(反向)'
+    };
+    Object.entries(state.scoring.weights).forEach(([id, w]) => {
+      if (!state.scoring.dimensions[id]) {
+        state.scoring.dimensions[id] = { label: fallbackLabels[id] || id, weight: w, desc:'', criteria:{5:'',4:'',3:'',2:'',1:''}, boost:{}, penalty:{} };
+      }
+    });
+  }
+  if (doc.publish) state.publish = doc.publish;
+  if (doc.report) state.report = doc.report;
+}
+
+function handleImport(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const json = JSON.parse(e.target.result);
+      const fn = file.name.toLowerCase();
+      let targetTab = null;
+
+      // ① 统一配置 / mmo-example
+      if (json.games && json.sources || json.games && json.scoring || json._meta) {
+        applyUnified(json);
+        targetTab = 'games';
+        toast('已导入统一配置（' + state.games.length + ' 个竞品）');
+      }
+      // ② 旧版面板合并备份 {config, games, scoring, publish}
+      else if (json.config || (json.games && (json.scoring || json.publish))) {
+        applyUnified({
+          games: json.games,
+          sources: { wcrss: { feed_url: json.config?.wcrss_feed_url || '' }, fetch_defaults: json.config?.fetch_defaults },
+          scoring: json.scoring,
+          publish: json.publish,
+          report: json.publish?.report_defaults ? { defaults: json.publish.report_defaults } : null
+        });
+        targetTab = 'games';
+        toast('已导入旧版备份并转换为新格式');
+      }
+      // ③ 旧版单文件
+      else if (fn.includes('game') && Array.isArray(json.games)) {
+        applyUnified({ games: json }); targetTab='games'; toast('已导入竞品列表');
+      }
+      else if (json.dimensions || json.weights) {
+        applyUnified({ scoring: json }); targetTab='scoring'; toast('已导入评分配置');
+      }
+      else if (json.tencent_docs || json.wecom_bot || json.local_output || json.local_backup) {
+        if (json.local_output) { // 老面板导出的 local_output 结构
+          json.local_backup = { enabled: json.local_output.enabled, dir: json.local_output.dir || 'data/reports' };
+          delete json.local_output;
+        }
+        applyUnified({ publish: json }); targetTab='publish'; toast('已导入发布配置');
+      }
+      else if (json.wcrss_feed_url || fn.includes('config')) {
+        applyUnified({ sources: { wcrss: { feed_url: json.wcrss_feed_url || '' }, fetch_defaults: json.fetch_defaults } });
+        targetTab='sources'; toast('已导入数据源配置');
+      }
+      else if (json.content_tags || json.kind_titles || fn.includes('report_format') || fn.includes('format')) {
+        applyUnified({ report: json }); targetTab='publish'; toast('已导入报告格式');
+      }
+      else {
+        return toast('无法识别的文件格式');
+      }
+
+      renderAll();
+      autoSave();
+      if (targetTab) switchTab(targetTab);
+    } catch (err) {
+      toast('解析失败: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ═══════════════ localStorage 恢复 ═══════════════
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const doc = JSON.parse(raw);
+    if (doc && (doc.games || doc.scoring)) { applyUnified(doc); return true; }
+  } catch(e) {}
+  return false;
+}
+
+// ═══════════════ Init ═══════════════
+function renderAll() {
+  renderGames();
+  syncSourcesInputs();
+  renderDimensions();
+  renderTiers();
+  renderModules();
+  syncPublishInputs();
+  syncReportFormatTextarea();
+  renderManualScoring();
+}
+
+const restored = loadFromStorage();
+if (!restored) {
+  // 首次打开：预置默认 9 维度（与 config/mmo-example.json 一致）
+  const defaults = {
+    A_strategy_fit: ['战略契合度', 1.2, '该竞品动态与自家产品当前核心系统焦点的匹配程度'],
+    B_user_match:   ['用户匹配度', 1.0, '竞品目标用户画像与自家产品目标用户的重叠程度'],
+    C_portability:  ['玩法可迁移性', 1.1, '竞品玩法/活动能否挂载到自家产品已有模块上'],
+    D_cost_inverse: ['实施成本（反向）', 0.9, '把竞品做法复制到自家产品的成本，成本越低分越高'],
+    E_cycle_fit:    ['周期合理性', 0.8, '是否匹配自家产品当前的版本/运营节奏'],
+    F_differentiation: ['差异化潜力', 1.0, '与市场已有方案的差异度，能否形成差异化卖点'],
+    G_pay_drive:    ['付费拉动力', 1.1, '对自家产品营收（ARPU）的潜在拉动作用'],
+    H_voice:        ['用户声量', 0.9, '玩家讨论热度与出圈传播潜力'],
+    I_risk_inverse: ['风险等级（反向）', 1.0, '跟进该做法的合规/舆情风险，风险越低分越高']
+  };
+  Object.entries(defaults).forEach(([id, [label, weight, desc]]) => {
+    state.scoring.dimensions[id] = { label, weight, desc, criteria: {5:'',4:'',3:'',2:'',1:''}, boost:{}, penalty:{} };
+  });
+  state.scoring.tiers = {
+    S: { min: 36, label: '强烈推荐 · 战略级' },
+    A: { min: 32, label: '可立项 · 进策划评审' },
+    B: { min: 28, label: '差异化借鉴 · 排进版本' },
+    C: { min: 22, label: '存档参考' },
+    D: { min:  0, label: '忽略' }
+  };
+  state.scoring.mount_points.modules = ['直购体系','血盟红包','赛季礼包','系统邮件','成就系统','时装商城','活动模块','签到日历','节气运营','UGC共创','新服运营','回流活动'];
+}
+renderAll();
+</script>
+</body>
+</html>
