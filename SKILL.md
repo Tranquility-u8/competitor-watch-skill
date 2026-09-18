@@ -43,16 +43,16 @@ data/reports/{daily,weekly,monthly,yearly}/*.md
 ## 二、快速开始（首次使用）
 
 ```bash
-# 1. 准备配置（仓库自带 MMO 示例，复制即用）
+# 0. 准备配置（仓库自带 MMO 示例，复制即用；随后把 project 节改成你的产品画像）
 cp config/mmo-example.json config/competitor-watch.json     # Windows: Copy-Item
 
-# 2. 解析各竞品的渠道入口（hykb 全自动；taptap/official 生成占位）
+# 1. 解析各竞品的渠道入口（hykb 全自动；taptap/official 生成占位）
 python scripts/resolve.py
 
-# 3. 采集（hykb 源无需任何密钥即可抓到评分+公告）
+# 2. 采集（hykb 源无需任何密钥即可抓到评分+公告）
 python scripts/ingest.py
 
-# 4. 出报告
+# 3. 出报告
 python scripts/report.py daily
 ```
 
@@ -78,13 +78,14 @@ data/                       articles.db + raw/ 原始缓存 + reports/ 生成的
 .backup-*/                  旧版配置归档（仅迁移期存在）
 ```
 
-**统一配置 `config/competitor-watch.json` 的 5 个 section**：
+**统一配置 `config/competitor-watch.json` 的 6 个 section**：
 
 | Section | 管什么 | 关键字段 |
 |---------|--------|---------|
+| `project` | 我的项目（评分参照系） | enabled 开关、name/genre/stage 画像、core_systems 等七组关键词字段、knowledge.summary 项目概要（知识库） |
 | `games` | 竞品列表（用户主要维护的） | name（唯一）、aliases、genre、priority、type=`game`\|`industry` |
 | `sources` | 数据源接入 | wcrss.feed_url（微信 RSS）、fetch_defaults |
-| `scoring` | 评分体系 | dimensions（含每维度 1–5 分标准 criteria + boost/penalty 关键词）、weights、tiers、mount_points |
+| `scoring` | 评分体系 | dimensions（含每维度 1–5 分标准 criteria + project_refs 项目字段引用 + boost/penalty 通用关键词）、weights、tiers |
 | `publish` | 发布渠道 | tencent_docs、wecom_bot、local_backup |
 | `report` | 报告格式 | content_tags、limits、section_order、kind_titles、dirty_marker |
 
@@ -105,23 +106,27 @@ data/                       articles.db + raw/ 原始缓存 + reports/ 生成的
 
 ## 四、数据源
 
-| 渠道 | 自动化程度 | 数据类型 | 接入方式 |
-|------|-----------|---------|---------|
-| `hykb` 好游快爆 | **全自动** | 评分 + 更新公告 | resolve.py 自动搜索 fid，零配置 |
-| `wechat` 微信公众号 | 半自动 | 文章正文 | 需 RSS 聚合服务，地址填 `sources.wcrss.feed_url` 或环境变量 `WCRSS_FEED_URL` |
-| `taptap` | 半自动 | 评分 + 评论 | resolve 生成占位 + `_hint` 搜索链接，按提示补 app_id 到 `derived/taptap.json` |
-| `official` 官网/论坛 | 手动配置 | 链接快照 / RSS | 在 `derived/official.json` 填 url（可选 rss / CSS selectors） |
+三类数据源均由统一配置 `sources` 节的 **enabled 开关**控制（`config-wizard.html`「数据源」页签可视化操作）。**关闭的渠道 ingest.py 采集时、resolve.py 解析时都会自动跳过**；重新开启后重跑一次 `resolve.py` 即可恢复。`ingest.py --source <id>` 显式指定时无视开关强制运行（便于测试）。
 
-**新增竞品标准流程**：
+| 渠道 | 开关 | 自动化程度 | 数据类型 | 接入方式 |
+|------|------|-----------|---------|---------|
+| `wechat` 微信公众号 | `sources.wcrss.enabled` | 半自动 | 文章正文 | 需 RSS 聚合服务，地址填 `sources.wcrss.feed_url` 或环境变量 `WCRSS_FEED_URL`（未配置时 ingest 友好跳过） |
+| `official` 游戏官网 | `sources.official.enabled` | **自动配置** | 公告 / RSS 快照 | **无需手动接入**：games 更新后 resolve.py 自动为每个新竞品生成条目（见下方流程） |
+| `hykb` 好游快爆 | `sources.extra_sources[].enabled` | 全自动 | 评分 + 更新公告 | resolve.py 自动搜索 fid，零配置 |
+| `taptap` | `sources.extra_sources[].enabled` | 半自动 | 评分快照 | resolve 生成占位 + `_hint` 搜索链接，按提示补 app_id 到 `derived/taptap.json` |
+| 自定义源 | `sources.extra_sources[].enabled` | 自定义 | 自定义 | 页签添加条目 + `scripts/sources/<id>.py` 提供 `run(**kw) -> (new, dup)`（参考 `hykb.py`，标准库），ingest 自动发现 |
+
+**新增竞品标准流程**（官网源在此流程中自动配置）：
 
 ```
 1. 修改 config/competitor-watch.json 的 games 数组（加一行）
 2. python scripts/resolve.py
    ├─ wcrss: 已订阅 → 自动写 mp_id ✅；未订阅 → 打印 Subscription Plan → ⚠️ 必须询问用户同意后才引导订阅
    ├─ hykb: 自动搜索定位 fid ✅（置信不足会留 _hint）
-   ├─ taptap: app_id 为空 → 给 _hint 链接让用户补
-   └─ official: 生成 placeholder
-3. python scripts/ingest.py
+   ├─ official: ★ 自动为新竞品生成官网条目（derived/official.json）——用户无需手动填任何 URL；
+   │            已有条目的 url/rss/selectors 原样保留；url 为空的占位条目 ingest 时自动跳过不报错
+   └─ taptap: app_id 为空 → 给 _hint 链接让用户补
+3. python scripts/ingest.py        # 只跑已开启的数据源
 4. python scripts/report.py daily
 ```
 
@@ -138,7 +143,21 @@ data/                       articles.db + raw/ 原始缓存 + reports/ 生成的
 3. 按 tiers 档位评级（默认 S≥36 / A≥32 / B≥28 / C≥22 / D）
 4. `industry` 类型竞品整体降分（默认 -3），不参与 TOP 推荐
 
-**默认 9 维度**（全部可在配置中增删，脚本自动适配；每维度在配置中含 `desc` 衡量说明与 `criteria` 1–5 分判分标准）：
+**评分参照系（project 节，「我的项目」）**：评分不是真空进行的——`project` 节描述用户自己的产品画像：
+
+| 字段 | 被哪个维度引用（project_refs） | 内容 |
+|------|------|------|
+| `core_systems` | A 战略契合（+2 档） | 核心系统关键词，如 血盟/帮派/直购 |
+| `target_users.overlap_keywords` | B 用户匹配（+2 档） | 目标用户重叠关键词 |
+| `mount_modules` | C 玩法可迁移（+1 档） | 可挂载模块清单 |
+| `calendar.key_nodes` | E 周期合理（+2 档） | 运营节点关键词（周年/节气/节日） |
+| `differentiation` | F 差异化（+2 档） | 差异化方向关键词 |
+| `monetization` | G 付费拉动（+2 档） | 商业化模型关键词 |
+| `risk_redlines` | I 风险等级（-2 档） | 风险红线关键词 |
+
+机制：`project.enabled=true` 时，score.py 把各维度 `project_refs` 引用的字段自动展开并入对应档位的关键词——**改产品画像一处，七个维度的打分口径自动跟随**；关闭后各维度仅按 boost/penalty 通用关键词打分（完全向后兼容）。`knowledge.summary` 是提炼过的项目概要（知识库），**规则引擎不消费它**，但 agent 在人工分析、写深度报告、回答"这个动态对我产品意味着什么"时应先读它理解语境。报告文件头会标注当时的参照系（名称·品类·阶段）并附 project 快照注释，供日后回溯评分基准。
+
+**默认 9 维度**（全部可在配置中增删，脚本自动适配；每维度在配置中含 `desc` 衡量说明与 `criteria` 1–5 分判分标准；D 实施成本与 H 用户声量为通用维度，不引用项目字段）：
 
 | 维度 | 名称 | 默认权重 | 一句话标准（5 分 ↔ 1 分） |
 |------|------|---------|--------------------------|
@@ -152,7 +171,7 @@ data/                       articles.db + raw/ 原始缓存 + reports/ 生成的
 | H_voice | 用户声量 | 0.9 | 破圈级传播 ↔ 无人关注 |
 | I_risk_inverse | 风险等级(反向) | 1.0 | 官方授权零风险 ↔ 私服/违规高风险 |
 
-完整判分标准与关键词见配置文件 `scoring.dimensions`（每个维度的 `criteria` 字段给出 1–5 分逐档描述，`boost`/`penalty` 为引擎实际命中规则）。用户可通过 config-wizard.html「评分体系」页签可视化调整。
+完整判分标准与关键词见配置文件 `scoring.dimensions`（每个维度的 `criteria` 字段给出 1–5 分逐档描述，`boost`/`penalty` 为通用命中规则，`project_refs` 为项目字段引用）。用户可通过 config-wizard.html「评分体系」页签可视化调整（第一个卡片即「我的项目」）。
 
 ```bash
 python scripts/score.py                # 增量：只打未打分的（ingest 后会自动跑）
@@ -207,12 +226,16 @@ python scripts/publish.py daily --no-wecom     # 跳过企微
 
 ### 必须做的事
 
-1. **首次运行**：检查 `config/competitor-watch.json` 是否存在。不存在 → 引导用户复制 `config/mmo-example.json` 或打开 `config-wizard.html` 配置
-2. **增改竞品后**：先 `resolve.py` 再 `ingest.py`
-3. **wcrss 缺订阅**：必须先问用户同意，不得自行添加订阅
-4. **报告/数据异常**：先查 `data/articles.db`（sqlite3）有无数据，再查 `config/derived/` 配置是否正确
-5. **正式发布前**：先 `--dry-run` 预览，确认内容无误后再推
-6. **用户问"怎么用/怎么配"**：指向 `config-wizard.html`（根目录，双击打开，第一个页签是完整用户手册）
+1. **首次运行**：检查 `config/competitor-watch.json` 是否存在。不存在 → 引导用户复制 `config/mmo-example.json` 或打开 `config-wizard.html` 配置。**配置第 0 步永远是 project 节**：引导用户把「我的项目」卡片改成自己的产品画像（名称/核心系统/目标用户/商业化等），再调竞品列表
+2. **增改竞品后**：先 `resolve.py` 再 `ingest.py`。**官网源在此步自动配置**——resolve 会为新竞品自动生成官网条目占位，不要让用户手动填 URL（除非用户想升级 rss/selectors 抓取）
+3. **数据源开关**：ingest/resolve 自动跳过 `enabled=false` 的渠道。用户重新打开某源开关后，提醒重跑一次 `resolve.py` 再采集
+4. **wcrss 缺订阅**：必须先问用户同意，不得自行添加订阅
+5. **报告/数据异常**：先查 `data/articles.db`（sqlite3）有无数据，再查 `config/derived/` 配置是否正确，最后核对数据源开关状态
+6. **正式发布前**：先 `--dry-run` 预览，确认内容无误后再推
+7. **用户问"怎么用/怎么配"**：指向 `config-wizard.html`（根目录，双击打开，第一个页签是完整用户手册）
+8. **用户想接入新数据源**（B站/贴吧等）：在 `sources.extra_sources` 加条目 + 在 `scripts/sources/<id>.py` 写采集器（`run(**kw) -> (new, dup)`，参考 `hykb.py`），无需改任何现有脚本
+9. **用户改了 project 节（产品方向调整/新阶段）**：提醒重跑 `python scripts/score.py --rescore-all` 全量重打，再重新生成受影响日期的报告；报告头的参照系标注会自动更新
+10. **人工分析/深度解读前**：先读 `project.knowledge.summary` 项目概要理解语境（规则引擎不消费它，但它是你理解"这个动态对用户产品意味着什么"的钥匙）；若概要明显过时，提示用户更新
 
 ### 禁止做的事
 
@@ -226,12 +249,14 @@ python scripts/publish.py daily --no-wecom     # 跳过企微
 
 | 症状 | 排查步骤 |
 |------|---------|
-| ingest 无数据 | 看 `derived/` 各文件有无有效 id / fid；wechat 源确认 feed_url 有效 |
+| ingest 无数据 | ① 核对数据源开关（sources 节 enabled）② 看 `derived/` 各文件有无有效 id / fid ③ wechat 源确认 feed_url 有效 |
 | 报告全空 | 该日无文章属正常；或查 articles.db 确认 |
-| 评分全 C/D | scoring.dimensions 关键词与品类不匹配 → 引导用户在面板调整 |
+| 评分全 C/D | ① project 节是否启用且画像与品类匹配 ② scoring.dimensions 通用关键词是否匹配 → 引导用户在面板调整 |
+| 改了「我的项目」评分没变 | 存量文章需 `score.py --rescore-all` 全量重打后重新生成报告 |
 | publish 报错 | tdoc：token 过期 / root_folder_id 无效；wecom：webhook 失效 |
 | wcrss missing | 引导用户去 RSS 服务后台添加订阅 → 重跑 resolve.py |
-| 配置读取失败 | 跑 `python scripts/config_loader.py` 自检（打印各 section 概况） |
+| 官网源没数据 | 属正常（占位条目自动跳过）；补 url/rss/selectors 后即可采集 |
+| 配置读取失败 | 跑 `python scripts/config_loader.py` 自检（打印各 section 与数据源开关概况） |
 
 ---
 
@@ -247,7 +272,8 @@ python scripts/publish.py daily --no-wecom     # 跳过企微
 
 - [x] Phase 1: 脱敏 + 可视化配置面板
 - [x] Phase 2: 配置统一（单一 JSON + 内嵌用户手册 + 评分标准）
-- [ ] Phase 3: 数据源扩展（B站视频 / 小红书 / 贴吧）
-- [ ] Phase 4: LLM 洞察层（智能分析 section，超越关键词匹配）
-- [ ] Phase 5: 品类画像系统（多品类评分关键词自动适配）
+- [x] Phase 3: 数据源扩展框架（extra_sources 可扩展机制、三源开关、官网随游戏列表自动配置；B站/小红书等渠道按框架接入即可）
+- [x] Phase 3.5: 项目画像参照系（project 节 + project_refs 声明式注入 + 报告参照系标注与快照 + knowledge 知识库）
+- [ ] Phase 4: LLM 洞察层（智能分析 section，超越关键词匹配；可消费 project.knowledge 语境）
+- [ ] Phase 5: 品类画像系统（多品类 project + 维度关键词模板包一键切换；stage 阶段感知权重）
 - [ ] Phase 6: 多项目管理（按项目分文件，多产品线并行监测）

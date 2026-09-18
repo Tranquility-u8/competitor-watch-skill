@@ -1,11 +1,14 @@
 """Resolve the unified config's game list into derived configs.
 
 User maintains ONLY: config/competitor-watch.json → games（顶层游戏列表）.
-Agent auto-maintains:
+Agent auto-maintains (each gated by its sources.*.enabled switch):
   - config/derived/wcrss.json    (mp_id mapping; reflects current wcrss subscriptions filtered by games)
   - config/derived/hykb.json     (auto-resolved fid via m.3839.com search)
   - config/derived/taptap.json   (manual; resolve fills in placeholders for missing entries)
-  - config/derived/official.json (placeholder per game; user can later upgrade rss/selectors)
+  - config/derived/official.json (auto placeholder per game — the official source is
+                                  AUTO-CONFIGURED whenever the games list changes; the user
+                                  never has to add URLs by hand, they can optionally upgrade
+                                  an entry with rss / selectors later)
 
 For wcrss subscription deltas (games-without-mp_id), this script PRINTS a plan.
 It does NOT subscribe automatically — the agent must ask the user for confirmation.
@@ -257,63 +260,87 @@ def main() -> int:
     industry = [g for g in games if g.get("type") == "industry"]
     print(f"games (unified config) -> {len(games)} entries ({len(games_only)} game / {len(industry)} industry)\n")
 
-    # 1) wcrss — 未配置 RSS 服务时跳过并保留现有 derived 映射
+    # 各渠道按统一配置 sources.*.enabled 开关决定是否解析；
+    # 关闭的渠道保留现有 derived 文件不动，重新开启后重跑本脚本即可。
+    wcrss_on = config_loader.source_enabled("wcrss")
+    official_on = config_loader.source_enabled("official")
+    hykb_on = config_loader.source_enabled("hykb")
+    taptap_on = config_loader.source_enabled("taptap")
+
+    # 1) wcrss — 开关关闭或未配置 RSS 服务时跳过并保留现有 derived 映射
     wcrss_resolved: list[dict] = []
     wcrss_missing: list[dict] = list(games)
-    try:
-        wcrss_resolved, wcrss_missing = resolve_wcrss(games)
-    except Exception as e:  # noqa: BLE001
-        print(f"[wcrss] skip ({e})")
-        prev_path = DERIVED_DIR / "wcrss.json"
-        if prev_path.exists():
-            try:
-                prev = json.loads(prev_path.read_text(encoding="utf-8"))
-                wcrss_resolved = prev.get("entries", []) or []
-                covered = {x["name"] for x in wcrss_resolved}
-                wcrss_missing = [g for g in games if g["name"] not in covered]
-                print(f"[wcrss] kept {len(wcrss_resolved)} existing entries from derived/wcrss.json")
-            except Exception:  # noqa: BLE001
-                pass
-        else:
-            print("[wcrss] no existing derived/wcrss.json either; all games treated as missing")
-    print(f"[wcrss] resolved: {len(wcrss_resolved)}, missing subscription: {len(wcrss_missing)}")
-    if wcrss_missing:
-        print("[wcrss] === Subscription Plan (NEEDS USER CONFIRMATION) ===")
-        for g in wcrss_missing:
-            print(f"  + 需要订阅公众号: {g['name']}（aliases: {g.get('aliases', [])}）")
-        print("    → 请在 RSS 服务后台手动添加订阅，或回复 agent 让其引导。\n")
+    if not wcrss_on:
+        print("[wcrss] disabled in config (sources.wcrss.enabled=false), skip — derived/wcrss.json 保持不变")
+    else:
+        try:
+            wcrss_resolved, wcrss_missing = resolve_wcrss(games)
+        except Exception as e:  # noqa: BLE001
+            print(f"[wcrss] skip ({e})")
+            prev_path = DERIVED_DIR / "wcrss.json"
+            if prev_path.exists():
+                try:
+                    prev = json.loads(prev_path.read_text(encoding="utf-8"))
+                    wcrss_resolved = prev.get("entries", []) or []
+                    covered = {x["name"] for x in wcrss_resolved}
+                    wcrss_missing = [g for g in games if g["name"] not in covered]
+                    print(f"[wcrss] kept {len(wcrss_resolved)} existing entries from derived/wcrss.json")
+                except Exception:  # noqa: BLE001
+                    pass
+            else:
+                print("[wcrss] no existing derived/wcrss.json either; all games treated as missing")
+        print(f"[wcrss] resolved: {len(wcrss_resolved)}, missing subscription: {len(wcrss_missing)}")
+        if wcrss_missing:
+            print("[wcrss] === Subscription Plan (NEEDS USER CONFIRMATION) ===")
+            for g in wcrss_missing:
+                print(f"  + 需要订阅公众号: {g['name']}（aliases: {g.get('aliases', [])}）")
+            print("    → 请在 RSS 服务后台手动添加订阅，或回复 agent 让其引导。\n")
 
     # 2) hykb — 只对 type=game 走，行业号没有评分
-    hykb_resolved = resolve_hykb(games_only)
-    print(f"[hykb] resolved: {len(hykb_resolved)}/{len(games_only)}\n")
+    if hykb_on:
+        hykb_resolved = resolve_hykb(games_only)
+        print(f"[hykb] resolved: {len(hykb_resolved)}/{len(games_only)}\n")
+    else:
+        hykb_resolved = None
+        print("[hykb] disabled in config (sources.extra_sources[].enabled=false), skip — derived/hykb.json 保持不变\n")
 
     # 3) official — 只对 type=game；幂等保留已配置的 url/selectors
-    existing_official_path = DERIVED_DIR / "official.json"
-    existing_official: dict[str, dict] = {}
-    if existing_official_path.exists():
-        try:
-            doc = json.loads(existing_official_path.read_text(encoding="utf-8"))
-            for e in doc.get("entries", []):
-                existing_official[e["name"]] = e
-        except Exception as ex:  # noqa: BLE001
-            print(f"[official] warn: existing config 读取失败 ({ex})，将重新生成")
-    official_resolved = resolve_official(games_only, existing_official)
+    #    官网源在游戏列表更新后自动配置（生成占位条目），用户无需手动填 URL
+    if official_on:
+        existing_official_path = DERIVED_DIR / "official.json"
+        existing_official: dict[str, dict] = {}
+        if existing_official_path.exists():
+            try:
+                doc = json.loads(existing_official_path.read_text(encoding="utf-8"))
+                for e in doc.get("entries", []):
+                    existing_official[e["name"]] = e
+            except Exception as ex:  # noqa: BLE001
+                print(f"[official] warn: existing config 读取失败 ({ex})，将重新生成")
+        official_resolved = resolve_official(games_only, existing_official)
+    else:
+        official_resolved = None
+        print("[official] disabled in config (sources.official.enabled=false), skip — derived/official.json 保持不变")
 
     # 4) taptap — 只对 type=game
-    existing_taptap_path = DERIVED_DIR / "taptap.json"
-    existing_taptap: dict[str, dict] = {}
-    if existing_taptap_path.exists():
-        for it in json.loads(existing_taptap_path.read_text(encoding="utf-8")).get("entries", []):
-            existing_taptap[it["name"]] = it
-    taptap_resolved = resolve_taptap_skeleton(games_only, existing_taptap)
-    print(f"[taptap] entries: {len(taptap_resolved)} "
-          f"({sum(1 for x in taptap_resolved if x.get('app_id'))} 已配)")
+    if taptap_on:
+        existing_taptap_path = DERIVED_DIR / "taptap.json"
+        existing_taptap: dict[str, dict] = {}
+        if existing_taptap_path.exists():
+            for it in json.loads(existing_taptap_path.read_text(encoding="utf-8")).get("entries", []):
+                existing_taptap[it["name"]] = it
+        taptap_resolved = resolve_taptap_skeleton(games_only, existing_taptap)
+        print(f"[taptap] entries: {len(taptap_resolved)} "
+              f"({sum(1 for x in taptap_resolved if x.get('app_id'))} 已配)")
+    else:
+        taptap_resolved = None
+        print("[taptap] disabled in config (sources.extra_sources[].enabled=false), skip — derived/taptap.json 保持不变")
 
     if args.check:
         print("\n[check] dry-run, not writing derived/*. Run without --check to apply.")
         return 0
 
-    # write —— 保留顶层注释字段（_doc / _strategy / _probe_status 等），仅替换 entries
+    # write —— 保留顶层注释字段（_doc / _strategy / _probe_status 等），仅替换 entries；
+    #          关闭的渠道不写（保留旧文件）
     print("\n[write] persisting derived/*.json")
 
     def _merge_keep_meta(path_name: str, new_data: dict) -> dict:
@@ -328,13 +355,22 @@ def main() -> int:
                 pass
         return new_data
 
-    write_derived("wcrss",     _merge_keep_meta("wcrss",    {"entries": wcrss_resolved, "missing": [g["name"] for g in wcrss_missing]}))
-    write_derived("hykb",      _merge_keep_meta("hykb",     {"entries": hykb_resolved}))
-    write_derived("official",  _merge_keep_meta("official", {"entries": official_resolved}))
-    write_derived("taptap",    _merge_keep_meta("taptap",   {"entries": taptap_resolved}))
+    if wcrss_on:
+        write_derived("wcrss", _merge_keep_meta("wcrss", {"entries": wcrss_resolved, "missing": [g["name"] for g in wcrss_missing]}))
+    if hykb_resolved is not None:
+        write_derived("hykb", _merge_keep_meta("hykb", {"entries": hykb_resolved}))
+    if official_resolved is not None:
+        write_derived("official", _merge_keep_meta("official", {"entries": official_resolved}))
+    if taptap_resolved is not None:
+        write_derived("taptap", _merge_keep_meta("taptap", {"entries": taptap_resolved}))
 
     print("\n[done] derived configs ready. Run `python scripts/ingest.py` to fetch.")
-    if wcrss_missing:
+    if official_on and official_resolved is not None:
+        n_placeholder = sum(1 for e in official_resolved if not e.get("url"))
+        if n_placeholder:
+            print(f"[official] {n_placeholder} 个竞品的官网条目已自动生成占位（无需手动配置）。")
+            print("            想升级为 RSS/结构化抓取时，再把 rss / selectors 填进 derived/official.json 即可。")
+    if wcrss_missing and wcrss_on:
         print(f"\n⚠️  {len(wcrss_missing)} 个游戏的微信公众号尚未订阅（见上方 Subscription Plan），")
         print("   是否需要我引导你添加订阅？请明确回复同意/不同意。")
     return 0

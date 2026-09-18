@@ -8,6 +8,10 @@
   - 5 级标签 S/A/B/C/D
   - 来源加成 + industry 降权 + 命中关键词列表（可解释性）
 
+项目参照系（schema v2.2）：project 节 enabled 时，各维度 project_refs 声明的
+项目字段（core_systems / monetization / ... ）自动展开为该维度的打分关键词；
+关闭时退化为纯通用关键词评分。
+
 CLI：
   python scripts/score.py                 # 仅打 score_json IS NULL 的（增量）
   python scripts/score.py --rescore-all   # 重打所有
@@ -44,6 +48,36 @@ DB_PATH = ROOT / "data" / "articles.db"
 def load_config() -> dict:
     """Scoring section of the unified config (config/competitor-watch.json)."""
     return config_loader.load_scoring()
+
+
+def apply_project_refs(scoring_cfg: dict) -> tuple[dict, int]:
+    """Merge project-profile keywords into dimensions per project_refs.
+
+    Each dimension may declare e.g.:
+        "project_refs": {"+2": "core_systems"}
+    meaning: when the project section is enabled, expand project.core_systems
+    into this dimension's +2 boost tier (penalty tiers for negative deltas).
+
+    Returns (effective_cfg, n_injected_keywords). When the project section is
+    disabled the original cfg object is returned unchanged (generic keywords
+    only, fully backward compatible).
+    """
+    if not config_loader.project_enabled():
+        return scoring_cfg, 0
+    cfg = json.loads(json.dumps(scoring_cfg))  # deep copy
+    n = 0
+    for dim in (cfg.get("dimensions") or {}).values():
+        for delta_str, path in (dim.get("project_refs") or {}).items():
+            kws = config_loader.project_keywords(path)
+            if not kws:
+                continue
+            bucket = "boost" if float(delta_str) > 0 else "penalty"
+            merged = dim.setdefault(bucket, {}).setdefault(delta_str, [])
+            for kw in kws:
+                if kw not in merged:
+                    merged.append(kw)
+                    n += 1
+    return cfg, n
 
 
 def _tier_order(cfg: dict) -> list[str]:
@@ -140,7 +174,9 @@ def main() -> int:
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()
 
-    cfg = load_config()
+    cfg, n_proj_kw = apply_project_refs(load_config())
+    if n_proj_kw:
+        print(f"[score] project profile ON: {n_proj_kw} keywords injected via project_refs")
     industry_set = load_industry_set()
 
     with connect(DB_PATH) as conn:

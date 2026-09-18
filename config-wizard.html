@@ -157,12 +157,8 @@ details.adv summary { cursor: pointer; font-size: 12.5px; font-weight: 700; colo
       <div class="subtitle">游戏竞品自动化监测 Skill — 配置面板 &amp; 用户手册（单一配置文件版）</div>
     </div>
     <div style="display:flex;align-items:center;gap:12px">
-      <div class="sync-dot" id="sync-status"><span class="dot"></span><span id="sync-text">已同步</span></div>
-      <div class="header-actions">
-        <button class="btn btn-outline" onclick="triggerImport()">导入配置</button>
-        <input type="file" id="import-file" accept=".json,application/json" style="display:none" onchange="handleImport(event)">
-        <button class="btn btn-primary" onclick="switchTab('export')">导出配置</button>
-      </div>
+      <!-- 右上角操作已移入「系统配置」页签；此隐藏 input 供 triggerImport() 使用 -->
+      <input type="file" id="import-file" accept=".json,application/json" style="display:none" onchange="handleImport(event)">
     </div>
   </div>
 
@@ -173,7 +169,7 @@ details.adv summary { cursor: pointer; font-size: 12.5px; font-weight: 700; colo
     <button class="tab" data-tab="sources">📡 数据源</button>
     <button class="tab" data-tab="scoring">⚖️ 评分体系</button>
     <button class="tab" data-tab="publish">📤 报告与发布</button>
-    <button class="tab" data-tab="export">💾 导入 / 导出</button>
+    <button class="tab" data-tab="export">⚙️ 系统配置</button>
   </div>
 
   <!-- ══════════════════════════════════════════ -->
@@ -231,10 +227,10 @@ Copy-Item config\mmo-example.json config\competitor-watch.json
 
 <span class="cmt"># macOS / Linux</span>
 cp config/mmo-example.json config/competitor-watch.json</div>
-      <p>也可以直接用<b>本面板</b>：在右侧各页签里编辑，到「导入 / 导出」页签下载 <code>competitor-watch.json</code>，放到 <code>config/</code> 目录下。</p>
+      <p>也可以直接用<b>本面板</b>：在左侧各页签里编辑，到「系统配置」页签点「导出配置」下载 <code>competitor-watch.json</code>，放到 <code>config/</code> 目录下。</p>
       <h3>Step 2 · 解析竞品入口</h3>
       <div class="codeblock">python scripts/resolve.py</div>
-      <p>自动为每个竞品定位好游快爆 <code>fid</code>、生成官网/TapTap 占位配置；已在 RSS 服务订阅的公众号会自动匹配 <code>mp_id</code>。</p>
+      <p>自动为每个竞品定位好游快爆 <code>fid</code>、已在 RSS 服务订阅的公众号自动匹配 <code>mp_id</code>。<b>游戏官网条目也是自动配置的</b>——每个新竞品都会自动生成官网条目，无需手动填任何 URL。</p>
       <h3>Step 3 · 采集数据</h3>
       <div class="codeblock">python scripts/ingest.py            <span class="cmt"># 全部数据源</span>
 python scripts/ingest.py --source hykb  <span class="cmt"># 只跑好游快爆（无需任何密钥）</span></div>
@@ -254,7 +250,8 @@ python scripts/report.py weekly             <span class="cmt"># 上周周报</sp
         <tr><th style="width:110px">节</th><th style="width:170px">管什么</th><th>关键字段</th></tr>
         <tr><td><code>games</code></td><td>竞品列表（你最主要维护的）</td><td>name（唯一）、aliases 别名、genre 品类、priority 优先级、type=industry 行业号</td></tr>
         <tr><td><code>sources</code></td><td>数据源接入</td><td>wcrss.feed_url 微信 RSS 地址、fetch_defaults 抓取窗口</td></tr>
-        <tr><td><code>scoring</code></td><td>评分体系</td><td>dimensions（含每维度 1–5 分标准 criteria）、weights 权重、tiers 评级档位、mount_points 挂载模块</td></tr>
+        <tr><td><code>project</code></td><td>我的项目（评分参照系）</td><td>enabled 开关、name/genre/stage 画像、core_systems 等七组关键词字段、knowledge 项目概要（知识库）</td></tr>
+        <tr><td><code>scoring</code></td><td>评分体系</td><td>dimensions（含每维度 1–5 分标准 criteria、project_refs 项目字段引用）、weights 权重、tiers 评级档位</td></tr>
         <tr><td><code>publish</code></td><td>发布渠道</td><td>tencent_docs 腾讯文档、wecom_bot 企微机器人、local_backup 本地输出</td></tr>
         <tr><td><code>report</code></td><td>报告格式</td><td>content_tags 文章分类关键词、limits 长度截断、kind_titles 标题</td></tr>
       </table>
@@ -263,17 +260,25 @@ python scripts/report.py weekly             <span class="cmt"># 上周周报</sp
       <p><b>敏感信息</b>（RSS token、webhook、access_token）优先走环境变量：<code>WCRSS_FEED_URL</code>、<code>TDOC_ACCESS_TOKEN</code>、<code>WECOM_WEBHOOK_URL</code>。<code>config/competitor-watch.json</code> 已被 <code>.gitignore</code> 排除，请勿提交到公开仓库。</p>
 
       <h2 id="m-sources"><span class="sec-num">4</span>数据源说明</h2>
+      <p>三类数据源均可在「数据源」页签用 <b>checkbox 开关</b>自由启停（写入统一配置 <code>sources</code> 节）。关闭的渠道 <code>ingest.py</code> 采集时和 <code>resolve.py</code> 解析时都会自动跳过；重新开启后重跑一次 <code>resolve.py</code> 即可恢复。</p>
       <table>
-        <tr><th style="width:130px">渠道</th><th style="width:110px">自动化程度</th><th style="width:130px">数据类型</th><th>接入方式</th></tr>
-        <tr><td>hykb 好游快爆</td><td><span class="badge badge-ok">全自动</span></td><td>评分 + 更新公告</td><td><code>resolve.py</code> 自动搜索定位 fid，零配置</td></tr>
-        <tr><td>wechat 微信公众号</td><td><span class="badge badge-warn">半自动</span></td><td>文章正文</td><td>需自建/订阅 RSS 聚合服务，把聚合地址填入 <code>sources.wcrss.feed_url</code></td></tr>
-        <tr><td>taptap</td><td><span class="badge badge-warn">半自动</span></td><td>评分 + 评论</td><td>在 <code>config/derived/taptap.json</code> 为每个竞品补 app_id（resolve 会给出搜索链接提示）</td></tr>
-        <tr><td>official 官网/论坛</td><td><span class="badge badge-empty">手动配置</span></td><td>链接快照 / RSS</td><td>在 <code>config/derived/official.json</code> 填 url（支持 rss / CSS selectors）</td></tr>
+        <tr><th style="width:120px">渠道</th><th style="width:120px">开关位置</th><th style="width:100px">自动化程度</th><th>数据类型与接入方式</th></tr>
+        <tr><td>wechat 微信公众号</td><td><code>sources.wcrss.enabled</code></td><td><span class="badge badge-warn">半自动</span></td><td>文章正文。需自建/订阅 RSS 聚合服务，地址填 <code>sources.wcrss.feed_url</code>（留空自动跳过，不影响其他源）</td></tr>
+        <tr><td>official 游戏官网</td><td><code>sources.official.enabled</code></td><td><span class="badge badge-ok">自动配置</span></td><td>公告 / RSS 快照。<b>游戏列表更新后由 resolve.py 自动生成条目</b>，无需手动接入（见下方说明）</td></tr>
+        <tr><td>hykb 好游快爆</td><td><code>sources.extra_sources[]</code></td><td><span class="badge badge-ok">全自动</span></td><td>评分 + 更新公告。resolve.py 自动搜索定位 fid，零配置</td></tr>
+        <tr><td>taptap</td><td><code>sources.extra_sources[]</code></td><td><span class="badge badge-warn">半自动</span></td><td>评分快照。resolve.py 生成占位 + <code>_hint</code> 搜索链接，按提示补 app_id 到 <code>derived/taptap.json</code></td></tr>
+        <tr><td>自定义源（扩展）</td><td><code>sources.extra_sources[]</code></td><td><span class="badge badge-empty">自定义</span></td><td>在「数据源」页签添加条目 + 在 <code>scripts/sources/</code> 放同名 <code>&lt;id&gt;.py</code> 采集器（提供 <code>run()</code> 函数），ingest.py 自动发现执行</td></tr>
       </table>
-      <p><b>新增竞品标准流程</b>：① 改配置 games 数组加一行 → ② <code>python scripts/resolve.py</code> → ③ <code>python scripts/ingest.py</code> → ④ <code>python scripts/report.py daily</code>。RSS 服务新增公众号订阅<b>必须先经你确认</b>，agent 不得自行下单。</p>
+      <div class="callout callout-ok"><b>✅ 游戏官网是自动配置的</b>
+      你只需维护「游戏列表」：新增/修改竞品后重跑 <code>python scripts/resolve.py</code>，官网源会<b>自动为每个新竞品生成条目</b>（写入 <code>config/derived/official.json</code>），已有条目的 rss / selectors 配置原样保留。url 为空的占位条目在采集时自动跳过、不会报错；想升级为真正的公告抓取时，再给该条目补 <code>rss</code> 或 <code>selectors</code> 字段即可。</div>
+      <div class="callout callout-info"><b>💡 扩展新数据源（如 B站 / 贴吧）</b>
+      ① 在「数据源 → 其他数据源」页签添加条目（源 ID + 显示名）；② 在 <code>scripts/sources/</code> 目录新建与 ID 同名的 Python 文件，实现 <code>run(**kwargs) -&gt; (new, dup)</code>（参考同目录 <code>hykb.py</code>，全部用标准库）；③ 打开条目开关即可。无需改动任何现有脚本。</div>
+      <p><b>新增竞品标准流程</b>：① 改配置 games 数组加一行 → ② <code>python scripts/resolve.py</code>（官网条目自动生成、hykb fid 自动定位、公众号自动匹配）→ ③ <code>python scripts/ingest.py</code> → ④ <code>python scripts/report.py daily</code>。RSS 服务新增公众号订阅<b>必须先经你确认</b>，agent 不得自行下单。</p>
 
       <h2 id="m-scoring"><span class="sec-num">5</span>评分体系与标准</h2>
-      <p>每篇文章按 <b>关键词命中规则</b>在 9 个维度上各打 1–5 分（起始 3 分中性，命中加分词上调、命中减分词下调，再叠加来源倾向），乘以权重求和得到总分，最后按档位（S/A/B/C/D）评级。以下是<b>当前配置</b>的维度与判分标准（随「评分体系」页签的修改实时更新）：</p>
+      <p>每篇文章按 <b>关键词命中规则</b>在各维度上打 1–5 分（起始 3 分中性，命中加分词上调、命中减分词下调，再叠加来源倾向），乘以权重求和得到总分，最后按档位（S/A/B/C/D）评级。</p>
+      <div class="callout callout-info"><b>评分参照系（我的项目）</b>：评分不是真空进行的——「评分体系」页签第一个卡片「我的项目」是你的产品画像（核心系统、目标用户、挂载模块、商业化模型、运营节奏、差异化方向、风险红线，外加一段项目概要知识库）。勾选启用后，各维度 <code>project_refs</code> 引用的字段会自动展开为该维度的打分关键词：<b>改产品画像一处，七个维度的打分口径自动跟随</b>；关闭后退化为纯通用关键词评分。每份报告的文件头都会标注当时的评分参照系，并附快照注释供回溯。</div>
+      <p>以下是<b>当前配置</b>的维度与判分标准（随「评分体系」页签的修改实时更新）：</p>
       <div id="manual-scoring"></div>
 
       <h2 id="m-reports"><span class="sec-num">6</span>报告与发布</h2>
@@ -301,9 +306,12 @@ python scripts/report.py weekly             <span class="cmt"># 上周周报</sp
       <h2 id="m-faq"><span class="sec-num">8</span>故障排查 FAQ</h2>
       <table>
         <tr><th style="width:220px">症状</th><th>排查步骤</th></tr>
-        <tr><td>ingest 无数据</td><td>检查 <code>config/derived/</code> 各文件是否有有效 id；hykb 源看控制台是否 fid 缺失；wechat 源确认 feed_url 有效</td></tr>
+        <tr><td>ingest 无数据</td><td>先看数据源开关：该渠道是否已在「数据源」页签开启；再查 <code>config/derived/</code> 各文件是否有有效 id；hykb 源看控制台是否 fid 缺失；wechat 源确认 feed_url 有效</td></tr>
+        <tr><td>某源采集报错</td><td>单源不影响其他源（ingest 逐源捕获异常）。可先在「数据源」页签关闭该源开关，其余源继续工作；修复后重新开启并重跑 <code>resolve.py</code></td></tr>
+        <tr><td>官网源没数据</td><td>属正常：url 为空的占位条目会自动跳过。给 <code>derived/official.json</code> 对应条目补 <code>url</code>（或 <code>rss</code> / <code>selectors</code>）后即可采集</td></tr>
         <tr><td>报告全空</td><td>该日期确实没有文章属正常；也可查 <code>data/articles.db</code>（sqlite）确认库里有数据</td></tr>
-        <tr><td>评分全是 C/D</td><td>scoring.dimensions 的关键词与你的品类不匹配——在「评分体系」页签调整关键词与权重</td></tr>
+        <tr><td>评分全是 C/D</td><td>若「我的项目」未启用，先去「评分体系」页签启用参照系并填写产品画像；若已启用，检查 scoring.dimensions 关键词与 project 字段是否匹配你的品类</td></tr>
+        <tr><td>改了「我的项目」后评分没变</td><td>存量文章需重打：跑 <code>python scripts/score.py --rescore-all</code>，再重新生成报告</td></tr>
         <tr><td>publish 报错</td><td>腾讯文档：检查 token 过期 / root_folder_id；企微：检查 webhook URL 是否有效</td></tr>
         <tr><td>公众号 missing</td><td>去 RSS 服务后台添加订阅 → 重跑 <code>resolve.py</code>（订阅操作需你本人确认）</td></tr>
         <tr><td>想改报告版式</td><td>编辑配置 <code>report</code> 节（章节顺序、分类关键词、标题文案），即时生效</td></tr>
@@ -350,8 +358,13 @@ python scripts/report.py weekly             <span class="cmt"># 上周周报</sp
   <!-- ═══ Tab: Sources ═══ -->
   <div id="tab-sources" class="tab-content hidden">
     <div class="card">
-      <div class="card-title"><span class="icon">📡</span>微信公众号 RSS 服务</div>
-      <div class="card-desc">写入统一配置 <code>sources</code> 节。需要一个聚合你所有公众号订阅的 RSS 服务（如自建 wechat2rss / wewe-rss 等），把聚合 Feed 地址（含 token）填入。环境变量 <code>WCRSS_FEED_URL</code> 优先级更高。留空则跳过微信源，其余源不受影响。</div>
+      <div class="card-title"><span class="icon">📡</span>微信公众号 RSS <span class="badge badge-warn" id="wcrss-badge">半自动</span></div>
+      <div class="card-desc">需要一个聚合你所有公众号订阅的 RSS 服务（如自建 wechat2rss / wewe-rss 等），把聚合 Feed 地址（含 token）填入。环境变量 <code>WCRSS_FEED_URL</code> 优先级更高。<b>关闭开关或留空 URL 时自动跳过本源，其余数据源不受影响。</b></div>
+      <div class="form-row">
+        <label>启用该数据源 <span class="hint">关闭后 ingest / resolve 均跳过微信源</span>
+          <input type="checkbox" id="wcrss_enabled" checked onchange="onSourcesChange()" style="width:auto;margin-left:auto">
+        </label>
+      </div>
       <div class="form-row">
         <label>RSS Feed URL <span class="hint">聚合订阅的完整地址</span></label>
         <input type="text" id="wcrss_feed_url" placeholder="https://your-rss-service.com/api/rss/all?token=YOUR_TOKEN" onchange="onSourcesChange()">
@@ -367,17 +380,89 @@ python scripts/report.py weekly             <span class="cmt"># 上周周报</sp
         </div>
       </div>
     </div>
+
     <div class="card">
-      <div class="card-title"><span class="icon">ℹ️</span>其余数据源</div>
-      <div class="card-desc">TapTap / 好游快爆 / 官网的入口配置由 <code>resolve.py</code> 自动维护在 <code>config/derived/</code> 目录，无需在本面板填写。好游快爆全自动；TapTap 需按提示补 app_id；官网需在 derived/official.json 里补 URL。详见「用户手册」第 4 节。</div>
+      <div class="card-title"><span class="icon">🌐</span>游戏官网 / 官方论坛 <span class="badge badge-ok">自动配置</span></div>
+      <div class="card-desc">官网条目<b>无需手动配置</b>：每当你在「游戏列表」页签新增/修改竞品并重跑 <code>python scripts/resolve.py</code>，本源会自动为每个新竞品生成官网条目（<code>config/derived/official.json</code>），已有条目的配置原样保留。</div>
+      <div class="form-row">
+        <label>启用该数据源 <span class="hint">关闭后 resolve 不再生成新条目，ingest 跳过采集</span>
+          <input type="checkbox" id="official_enabled" checked onchange="onSourcesChange()" style="width:auto;margin-left:auto">
+        </label>
+      </div>
+      <div class="callout callout-info"><b>💡 官网源工作方式</b>
+        ① 新增竞品 → 重跑 resolve.py → 自动生成条目占位（url 为空时采集阶段自动跳过，不报错）；② 想要真正的公告抓取，可给条目补 <code>rss</code>（站点 RSS 地址）或 <code>selectors</code>（CSS 选择器）字段；③ 重新开启本开关后重跑一次 resolve.py 即可恢复。</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">🧩</span>其他数据源 <span class="badge badge-ok" id="extra-count-badge"></span></div>
+      <div class="card-desc">可扩展的采集渠道列表，<b>每条可独立开关</b>。内置好游快爆 / TapTap 两个示例；要接入新渠道（B站、贴吧、小红书…），在下方添加条目，并在 <code>scripts/sources/</code> 目录放一个与 id 同名的采集器脚本（提供 <code>run()</code> 函数），<code>ingest.py</code> 会自动发现并执行。入口 id（fid / app_id 等）由 <code>resolve.py</code> 自动维护在 <code>config/derived/</code>。</div>
+      <details class="adv" open>
+        <summary>➕ 添加自定义数据源</summary>
+        <div class="add-form" style="margin-top:10px">
+          <div style="width:110px"><label>源 ID <span class="hint">英文</span></label><input type="text" id="new-src-id" placeholder="如 bilibili"></div>
+          <div style="width:120px"><label>显示名</label><input type="text" id="new-src-label" placeholder="如 B站动态"></div>
+          <div style="width:110px"><label>自动化程度</label><select id="new-src-automation">
+            <option value="full">全自动</option><option value="semi" selected>半自动</option><option value="manual">手动</option>
+          </select></div>
+          <div style="flex:1;min-width:160px"><label>说明 <span class="hint">抓什么、需要什么</span></label><input type="text" id="new-src-desc" placeholder="如 UP 主动态，需 cookie"></div>
+          <button class="btn btn-primary btn-sm" onclick="addExtraSource()">添加</button>
+        </div>
+      </details>
+      <div class="divider"></div>
+      <div id="extra-source-list"></div>
     </div>
   </div>
 
   <!-- ═══ Tab: Scoring ═══ -->
   <div id="tab-scoring" class="tab-content hidden">
     <div class="card">
+      <div class="card-title"><span class="icon">🎯</span>我的项目 <span class="badge badge-warn" id="project-switch-badge"></span></div>
+      <div class="card-desc">你的产品画像——整个评分体系的<b>参照系</b>（配置 <code>project</code> 节）。勾选启用后，下方各维度 <code>project_refs</code> 引用的字段会自动展开为打分关键词；下方「项目概要」是提炼过的知识库，供 AI 工具分析报告时阅读理解项目背景。产品方向调整时只改这里，评分口径自动跟随（改完建议重跑 <code>score.py --rescore-all</code>）。</div>
+      <div class="callout callout-info" style="margin:10px 0">依赖提示：内置维度中 <b>A 战略契合</b>（核心系统）、<b>B 用户匹配</b>（目标用户）、<b>C 玩法可迁移</b>（挂载模块）、<b>E 周期合理</b>（运营节奏）、<b>F 差异化</b>（差异化方向）、<b>G 付费拉动</b>（商业化模型）、<b>I 风险等级</b>（风险红线）比较依赖本栏目；未启用时这些维度仅按通用关键词打分。</div>
+      <div class="form-row">
+        <label>启用评分参照系 <input type="checkbox" id="project_enabled" onchange="onProjectChange()" style="width:auto"></label>
+      </div>
+      <div class="form-hgrid">
+        <div class="form-row"><label>产品名称</label><input type="text" id="project_name" placeholder="如 我的天涯明月刀" onchange="onProjectChange()"></div>
+        <div class="form-row"><label>品类</label><input type="text" id="project_genre" placeholder="如 国风武侠 MMO" onchange="onProjectChange()"></div>
+      </div>
+      <div class="form-hgrid">
+        <div class="form-row"><label>阶段 <span class="hint">立项/研发/测试/运营</span></label><input type="text" id="project_stage" placeholder="如 运营期" onchange="onProjectChange()"></div>
+        <div class="form-row"><label>平台</label><input type="text" id="project_platform" placeholder="如 手游/端游" onchange="onProjectChange()"></div>
+      </div>
+      <div class="form-row"><label>核心系统 <span class="hint">逗号分隔，A 战略契合 +2 档引用</span></label><input type="text" id="project_core_systems" placeholder="如 血盟, 帮派, 直购, 赛季礼包" onchange="onProjectChange()"></div>
+      <div class="form-hgrid">
+        <div class="form-row"><label>目标用户画像</label><input type="text" id="project_persona" placeholder="如 25-40岁男性，国风/怀旧向" onchange="onProjectChange()"></div>
+        <div class="form-row"><label>付费习惯</label><input type="text" id="project_pay_habits" placeholder="如 中R为主，偏好直购" onchange="onProjectChange()"></div>
+      </div>
+      <div class="form-row"><label>用户重叠关键词 <span class="hint">逗号分隔，B 用户匹配 +2 档引用</span></label><input type="text" id="project_overlap_keywords" placeholder="如 国风, 武侠, 怀旧服, 情怀" onchange="onProjectChange()"></div>
+      <div class="form-hgrid">
+        <div class="form-row"><label>运营节奏</label><input type="text" id="project_rhythm" placeholder="如 周更 + 节气 + 周年庆" onchange="onProjectChange()"></div>
+        <div class="form-row"><label>商业化模型 <span class="hint">逗号分隔，G 付费 +2 档</span></label><input type="text" id="project_monetization" placeholder="如 直购, 月卡, 战令, 限时礼包" onchange="onProjectChange()"></div>
+      </div>
+      <div class="form-row"><label>运营节点关键词 <span class="hint">逗号分隔，E 周期 +2 档引用</span></label><input type="text" id="project_key_nodes" placeholder="如 周年, 节气, 春节, 中秋" onchange="onProjectChange()"></div>
+      <div class="form-hgrid">
+        <div class="form-row"><label>差异化方向 <span class="hint">逗号分隔，F 差异化 +2 档</span></label><input type="text" id="project_differentiation" placeholder="如 国风, 非遗, 戏曲, 山海经" onchange="onProjectChange()"></div>
+        <div class="form-row"><label>风险红线 <span class="hint">逗号分隔，I 风险 -2 档</span></label><input type="text" id="project_risk_redlines" placeholder="如 擦边, 私服, 外挂" onchange="onProjectChange()"></div>
+      </div>
+      <div class="divider"></div>
+      <div class="form-row">
+        <label>项目概要（知识库）<span class="hint">提炼过的项目情况，供 AI 工具分析/写报告时阅读理解，规则引擎不消费</span></label>
+        <textarea id="project_summary" rows="5" placeholder="用 3-5 段话提炼：产品定位与阶段、核心系统与商业化、目标用户、运营节奏、当前重点方向、跟进竞品时优先关注什么……" onchange="onProjectChange()"></textarea>
+      </div>
+      <div class="divider"></div>
+      <div style="font-size:13.5px;font-weight:700;margin-bottom:6px">🧩 可挂载模块清单 <span class="hint">（C 玩法可迁移维度对照：竞品玩法能直接挂到这些模块上即给高分）</span></div>
+      <div class="add-form">
+        <div style="flex:1;min-width:200px"><label>模块名称</label><input type="text" id="new-module-name" placeholder="如 活动模块、签到日历"></div>
+        <button class="btn btn-primary btn-sm" onclick="addModule()">添加</button>
+      </div>
+      <div class="divider"></div>
+      <div id="module-list"></div>
+    </div>
+
+    <div class="card">
       <div class="card-title"><span class="icon">⚖️</span>评分维度 <span class="badge badge-ok" id="dim-count-badge"></span></div>
-      <div class="card-desc">写入统一配置 <code>scoring.dimensions</code>。每个维度包含：名称、ID、权重（0–3）、衡量说明（desc）、<b>1–5 分判分标准</b>（criteria，供人工核对与 AI 理解）、加分/减分关键词（引擎实际打分依据）。维度数量可自由增减，脚本自动适配。</div>
+      <div class="card-desc">写入统一配置 <code>scoring.dimensions</code>。每个维度包含：名称、ID、权重（0–3）、衡量说明（desc）、<b>1–5 分判分标准</b>（criteria，供人工核对与 AI 理解）、引用项目字段（project_refs，启用「我的项目」后自动展开为关键词）、加分/减分通用关键词（引擎实际打分依据）。维度数量可自由增减，脚本自动适配。</div>
 
       <details class="adv" open>
         <summary>➕ 添加新维度</summary>
@@ -404,17 +489,6 @@ python scripts/report.py weekly             <span class="cmt"># 上周周报</sp
       </div>
       <div class="divider"></div>
       <div id="tier-list"></div>
-    </div>
-
-    <div class="card">
-      <div class="card-title"><span class="icon">🧩</span>挂载模块（自家产品清单）</div>
-      <div class="card-desc">你的产品有哪些现成可挂载的系统？用于「玩法可迁移性」维度对照：竞品玩法能直接挂到这些模块上，该维度即给高分。</div>
-      <div class="add-form">
-        <div style="flex:1;min-width:200px"><label>模块名称</label><input type="text" id="new-module-name" placeholder="如 活动模块、签到日历"></div>
-        <button class="btn btn-primary btn-sm" onclick="addModule()">添加</button>
-      </div>
-      <div class="divider"></div>
-      <div id="module-list"></div>
     </div>
   </div>
 
@@ -495,12 +569,15 @@ python scripts/report.py weekly             <span class="cmt"># 上周周报</sp
     </div>
   </div>
 
-  <!-- ═══ Tab: Export ═══ -->
+  <!-- ═══ Tab: Export（系统配置）═══ -->
   <div id="tab-export" class="tab-content hidden">
     <div class="card">
-      <div class="card-title"><span class="icon">💾</span>导出统一配置</div>
-      <div class="card-desc">下载 <b>competitor-watch.json</b>（唯一配置文件），放到 skill 的 <code>config/</code> 目录覆盖原文件即可生效。敏感字段请勿提交到代码仓库。</div>
-      <button class="btn btn-primary" onclick="downloadUnified()" style="width:100%;justify-content:center">⬇ 下载 competitor-watch.json</button>
+      <div class="card-title"><span class="icon">💾</span>配置导入 / 导出</div>
+      <div class="card-desc"><b>导出</b>：下载 competitor-watch.json（唯一配置文件），放到 skill 的 <code>config/</code> 目录覆盖原文件即可生效。<b>导入</b>：读取本地配置文件并填充到各页签，确认无误后导出即可完成迁移。敏感字段请勿提交到代码仓库。</div>
+      <div class="form-hgrid" style="margin-bottom:0">
+        <button class="btn btn-outline" onclick="triggerImport()" style="width:100%;justify-content:center">📥 导入配置</button>
+        <button class="btn btn-primary" onclick="downloadUnified()" style="width:100%;justify-content:center">📤 导出配置</button>
+      </div>
     </div>
     <div class="card">
       <div class="card-title"><span class="icon">👁️</span>JSON 预览</div>
@@ -525,12 +602,31 @@ const STORAGE_KEY = 'competitor-watch-config-v2';
 function defaultState() {
   return {
     games: [],
-    sources: { wcrss: { feed_url: '' }, fetch_defaults: { recent_days: 3, num: 50 } },
+    project: {
+      enabled: false,
+      name: '', genre: '', stage: '', platform: '',
+      core_systems: [],
+      target_users: { persona: '', pay_habits: '', overlap_keywords: [] },
+      mount_modules: [],
+      monetization: [],
+      calendar: { rhythm: '', key_nodes: [] },
+      differentiation: [],
+      risk_redlines: [],
+      knowledge: { summary: '', docs: [] }
+    },
+    sources: {
+      wcrss: { enabled: true, feed_url: '' },
+      official: { enabled: true },
+      extra_sources: [
+        { id: 'hykb',   label: '好游快爆', enabled: true,  automation: 'full', desc: '评分 + 更新公告。resolve.py 自动搜索定位 fid，零配置开箱即用。' },
+        { id: 'taptap', label: 'TapTap',   enabled: false, automation: 'semi', desc: '评分快照。resolve.py 生成占位并给出 _hint 搜索链接，需按提示补 app_id。' }
+      ],
+      fetch_defaults: { recent_days: 3, num: 50 }
+    },
     scoring: {
       weights: {}, tiers: {}, dimensions: {},
       source_weight_bias: { official:{A_strategy_fit:0.5,I_risk_inverse:0.5}, wechat:{H_voice:0.5}, hykb:{B_user_match:0.3}, taptap:{B_user_match:0.3,H_voice:0.3} },
-      industry_filter: { demote_score: -3 },
-      mount_points: { modules: [] }
+      industry_filter: { demote_score: -3 }
     },
     publish: {
       tencent_docs: { enabled:false, endpoint:'https://docs.qq.com/openapi/mcp', access_token:'', root_folder_id:'', month_folders:{}, doc_ids:{daily:{},weekly:{},monthly:{},yearly:{}}, doc_urls:{daily:{},weekly:{},monthly:{},yearly:{}}, title_template:{daily:'竞品日报 {label}',weekly:'竞品周报 {label}',monthly:'竞品月报 {label}',yearly:'竞品年报 {label}'} },
@@ -558,15 +654,18 @@ const TIER_COLORS = { S:'#d1fae5/#065f46', A:'#dbeafe/#1d4ed8', B:'#fef3c7/#9240
 // ═══════════════ Auto-save ═══════════════
 let saveTimer = null;
 function autoSave() {
+  // 同步指示器已随右上角操作区移除；此处仅做可选展示，自动保存逻辑不变
   const el = document.getElementById('sync-status');
   const txt = document.getElementById('sync-text');
-  el.classList.add('saving'); txt.textContent = '保存中...';
+  if (el) el.classList.add('saving');
+  if (txt) txt.textContent = '保存中...';
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      el.classList.remove('saving'); txt.textContent = '已同步';
-    } catch(e) { txt.textContent = '存储失败'; }
+      if (el) el.classList.remove('saving');
+      if (txt) txt.textContent = '已同步';
+    } catch(e) { if (txt) txt.textContent = '存储失败'; }
   }, 400);
 }
 
@@ -616,11 +715,26 @@ function buildUnified() {
       boost: d.boost || {},
       penalty: d.penalty || {}
     };
+    if (d.project_refs && Object.keys(d.project_refs).length) dims[id].project_refs = d.project_refs;
   });
+  const p = state.project;
   return {
     _meta: {
-      _doc: "竞品监测统一配置（schema v2.0）。所有配置集中在这一个文件。可用根目录 config-wizard.html 可视化编辑。敏感字段请勿提交到代码仓库。",
-      schema_version: "2.0"
+      _doc: "竞品监测统一配置（schema v2.2）。所有配置集中在这一个文件。可用根目录 config-wizard.html 可视化编辑。敏感字段请勿提交到代码仓库。",
+      schema_version: "2.2"
+    },
+    project: {
+      _doc: "自家产品画像——评分体系参照系（知识库）。enabled=true 时各维度 project_refs 引用的字段自动展开为打分关键词；knowledge.summary 供 AI 工具阅读理解项目背景。产品方向调整只改本节，评分口径自动跟随。",
+      enabled: !!p.enabled,
+      name: p.name || '', genre: p.genre || '', stage: p.stage || '', platform: p.platform || '',
+      core_systems: p.core_systems || [],
+      target_users: { persona: p.target_users?.persona || '', pay_habits: p.target_users?.pay_habits || '', overlap_keywords: p.target_users?.overlap_keywords || [] },
+      mount_modules: p.mount_modules || [],
+      monetization: p.monetization || [],
+      calendar: { rhythm: p.calendar?.rhythm || '', key_nodes: p.calendar?.key_nodes || [] },
+      differentiation: p.differentiation || [],
+      risk_redlines: p.risk_redlines || [],
+      knowledge: { summary: p.knowledge?.summary || '', docs: p.knowledge?.docs || [] }
     },
     games: {
       _schema: { name:"中文显示名（必填唯一）", type:"game|industry", aliases:"搜索别名", priority:"high|normal|low", genre:"品类标签", notes:"备注" },
@@ -634,19 +748,28 @@ function buildUnified() {
       })
     },
     sources: {
-      _doc: "数据源配置。wcrss 为微信公众号 RSS 聚合服务；环境变量 WCRSS_FEED_URL 优先。",
-      wcrss: { feed_url: state.sources.wcrss.feed_url || '' },
+      _doc: "数据源配置与总开关。wcrss=微信公众号 RSS 聚合服务；official=游戏官网/论坛（更新 games 后 resolve.py 自动生成条目）；extra_sources=可扩展的其他数据源列表。enabled=false 的渠道 ingest/resolve 自动跳过。",
+      wcrss: {
+        enabled: !!state.sources.wcrss.enabled,
+        feed_url: state.sources.wcrss.feed_url || ''
+      },
+      official: {
+        enabled: !!state.sources.official.enabled
+      },
+      extra_sources: (state.sources.extra_sources || []).map(e => ({
+        id: e.id, label: e.label || e.id,
+        enabled: !!e.enabled, automation: e.automation || 'semi', desc: e.desc || ''
+      })),
       fetch_defaults: { recent_days: state.sources.fetch_defaults.recent_days, num: state.sources.fetch_defaults.num }
     },
     scoring: {
-      _doc: "多维度评估打分配置。每维度 1-5 分（起始 3 分），关键词命中调整，加权求和。dimensions 内含 label/desc/criteria（1-5 分判分标准）与 boost/penalty 关键词。",
-      _version: "v2.0",
+      _doc: "多维度评估打分配置。每维度 1-5 分（起始 3 分），关键词命中调整，加权求和。dimensions 内含 label/desc/criteria（1-5 分判分标准）、project_refs（引用 project 节字段，启用后自动展开为关键词）与 boost/penalty 通用关键词。",
+      _version: "v2.2",
       weights: Object.fromEntries(Object.entries(state.scoring.dimensions).map(([id,d]) => [id, Number(d.weight) || 1.0])),
       tiers: state.scoring.tiers,
       dimensions: dims,
       source_weight_bias: state.scoring.source_weight_bias,
-      industry_filter: state.scoring.industry_filter,
-      mount_points: state.scoring.mount_points
+      industry_filter: state.scoring.industry_filter
     },
     publish: state.publish,
     report: state.report
@@ -714,16 +837,76 @@ function renderGames() {
 }
 
 // ═══════════════ Sources ═══════════════
+const AUTOMATION_BADGES = {
+  full:  ['badge-ok',   '全自动'],
+  semi:  ['badge-warn', '半自动'],
+  manual:['badge-empty','手动配置']
+};
+
 function syncSourcesInputs() {
+  const w = document.getElementById('wcrss_enabled');
+  if (w) w.checked = !!state.sources.wcrss.enabled;
   sv('wcrss_feed_url', state.sources.wcrss.feed_url || '');
+  const o = document.getElementById('official_enabled');
+  if (o) o.checked = !!state.sources.official.enabled;
   sv('fetch_recent_days', state.sources.fetch_defaults.recent_days);
   sv('fetch_num', state.sources.fetch_defaults.num);
+  renderExtraSources();
 }
 function onSourcesChange() {
+  state.sources.wcrss.enabled = cb('wcrss_enabled');
   state.sources.wcrss.feed_url = gv('wcrss_feed_url').trim();
+  state.sources.official.enabled = cb('official_enabled');
   state.sources.fetch_defaults.recent_days = ni('fetch_recent_days', 3);
   state.sources.fetch_defaults.num = ni('fetch_num', 50);
   autoSave();
+}
+
+function addExtraSource() {
+  const id = gv('new-src-id').trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+  const label = gv('new-src-label').trim();
+  const automation = gv('new-src-automation') || 'semi';
+  const desc = gv('new-src-desc').trim();
+  if (!id || !label) return toast('请填写源 ID 和显示名');
+  if (state.sources.extra_sources.find(e => e.id === id)) return toast('已存在同 ID 数据源');
+  state.sources.extra_sources.push({ id, label, enabled: true, automation, desc });
+  sv('new-src-id',''); sv('new-src-label',''); sv('new-src-desc','');
+  renderExtraSources(); autoSave();
+  toast('已添加 ' + label + ' — 记得在 scripts/sources/' + id + '.py 提供采集器');
+}
+function removeExtraSource(id) {
+  state.sources.extra_sources = state.sources.extra_sources.filter(e => e.id !== id);
+  renderExtraSources(); autoSave(); toast('已移除');
+}
+function toggleExtraSource(id, enabled) {
+  const e = state.sources.extra_sources.find(x => x.id === id);
+  if (!e) return;
+  e.enabled = !!enabled;
+  autoSave();
+  toast((e.label || id) + (e.enabled ? ' 已开启（重跑 resolve.py 生效）' : ' 已关闭'));
+}
+function renderExtraSources() {
+  const c = document.getElementById('extra-source-list');
+  if (!c) return;
+  c.innerHTML = '';
+  const list = state.sources.extra_sources || [];
+  const badge = document.getElementById('extra-count-badge');
+  if (badge) badge.textContent = list.filter(e => e.enabled).length + '/' + list.length + ' 开启';
+  list.forEach(e => {
+    const [cls, txt] = AUTOMATION_BADGES[e.automation] || AUTOMATION_BADGES.semi;
+    const div = document.createElement('div');
+    div.className = 'list-item';
+    div.innerHTML = `
+      <input type="checkbox" ${e.enabled ? 'checked' : ''} onchange="toggleExtraSource('${escHtml(e.id)}', this.checked)" style="width:16px;height:16px;cursor:pointer" title="开关该数据源">
+      <div class="item-name">${escHtml(e.label || e.id)}</div>
+      <span class="dim-id">${escHtml(e.id)}</span>
+      <span class="badge ${cls}">${txt}</span>
+      <div class="item-meta">${escHtml(e.desc || '')}</div>
+      <div class="item-actions">
+        <button class="btn btn-sm btn-ghost" onclick="removeExtraSource('${escHtml(e.id)}')">删除</button>
+      </div>`;
+    c.appendChild(div);
+  });
 }
 
 // ═══════════════ Scoring: dimensions ═══════════════
@@ -750,6 +933,16 @@ function updateDim(id, field, value) {
   else if (field === 'label') d.label = value;
   else if (field === 'desc') d.desc = value;
   else if (field.startsWith('crit:')) d.criteria[field.slice(5)] = value;
+  else if (field === 'refField' || field === 'refDelta') {
+    // project_refs 单引用模型：{ "<delta>": "<project 字段路径>" }
+    const refs = d.project_refs || {};
+    const entry = Object.entries(refs)[0] || ['+1', ''];
+    let delta = entry[0], path = entry[1];
+    if (field === 'refField') path = value;
+    else delta = value;
+    if (!path) delete d.project_refs;
+    else d.project_refs = { [delta]: path };
+  }
   else if (field.startsWith('kw:')) {
     // kw:<group>:<delta>  group=boost|penalty
     const [, group, delta] = field.split(':');
@@ -781,6 +974,16 @@ function renderDimensions() {
   c.innerHTML = '';
   const entries = Object.entries(state.scoring.dimensions);
   document.getElementById('dim-count-badge').textContent = entries.length + ' 个维度';
+  const REF_FIELDS = [
+    ['', '不引用'],
+    ['core_systems', '核心系统（A 战略契合）'],
+    ['target_users.overlap_keywords', '目标用户重叠词（B 用户匹配）'],
+    ['mount_modules', '可挂载模块（C 玩法可迁移）'],
+    ['calendar.key_nodes', '运营节点（E 周期合理）'],
+    ['differentiation', '差异化方向（F 差异化）'],
+    ['monetization', '商业化模型（G 付费拉动）'],
+    ['risk_redlines', '风险红线（I 风险等级）']
+  ];
   entries.forEach(([id, d]) => {
     const card = document.createElement('div');
     card.className = 'dim-card';
@@ -791,7 +994,6 @@ function renderDimensions() {
 
     const kwRows = (group) => {
       const obj = d[group] || {};
-      const sign = group === 'boost' ? '+' : '-';
       let html = Object.entries(obj).map(([delta, kws]) => `
         <div class="kw-row">
           <div class="kw-delta ${group==='boost'?'plus':'minus'}">${escHtml(delta)}</div>
@@ -801,6 +1003,20 @@ function renderDimensions() {
       html += `<button class="btn btn-sm btn-outline" onclick="addKwRow('${escHtml(id)}','${group}')">+ ${group==='boost'?'加分组':'减分组'}</button>`;
       return html;
     };
+
+    const refEntry = Object.entries(d.project_refs || {})[0] || ['', ''];
+    const refFieldOpts = REF_FIELDS.map(([v, l]) =>
+      `<option value="${v}" ${refEntry[1]===v?'selected':''}>${l}</option>`).join('');
+    const refDeltaOpts = ['+2','+1','-1','-2'].map(v =>
+      `<option value="${v}" ${refEntry[0]===v?'selected':''}>${v}</option>`).join('');
+    const refRow = `
+      <div class="form-row" style="margin:10px 0 0">
+        <label>引用项目字段（project_refs）<span class="hint">启用「我的项目」后，该字段的关键词自动并入本维度对应档位打分</span></label>
+        <div style="display:flex;gap:8px">
+          <select style="flex:1" onchange="updateDim('${escHtml(id)}','refField',this.value)">${refFieldOpts}</select>
+          <select style="width:76px" onchange="updateDim('${escHtml(id)}','refDelta',this.value)">${refDeltaOpts}</select>
+        </div>
+      </div>`;
 
     card.innerHTML = `
       <div class="dim-head">
@@ -817,6 +1033,7 @@ function renderDimensions() {
         <label>衡量说明 <span class="hint">这个维度衡量什么（一句话）</span></label>
         <input type="text" value="${escHtml(d.desc||'')}" placeholder="如：该动态与自家产品核心方向的匹配程度" onchange="updateDim('${escHtml(id)}','desc',this.value)">
       </div>
+      ${refRow}
       <div class="crit-grid">${critRows}</div>
       <details class="adv">
         <summary>🎯 加分 / 减分关键词（引擎实际打分依据）</summary>
@@ -871,22 +1088,75 @@ function renderTiers() {
   });
 }
 
+// ═══════════════ Project（我的项目：评分参照系）═══════════════
+function splitList(v) { return v.split(/[,，]/).map(s => s.trim()).filter(Boolean); }
+
+function syncProjectInputs() {
+  const p = state.project;
+  const enabledEl = document.getElementById('project_enabled');
+  if (enabledEl) enabledEl.checked = !!p.enabled;
+  const badge = document.getElementById('project-switch-badge');
+  if (badge) { badge.textContent = p.enabled ? '已启用' : '未启用'; badge.className = 'badge ' + (p.enabled ? 'badge-ok' : 'badge-empty'); }
+  sv('project_name', p.name || '');
+  sv('project_genre', p.genre || '');
+  sv('project_stage', p.stage || '');
+  sv('project_platform', p.platform || '');
+  sv('project_core_systems', (p.core_systems || []).join(', '));
+  sv('project_persona', p.target_users?.persona || '');
+  sv('project_pay_habits', p.target_users?.pay_habits || '');
+  sv('project_overlap_keywords', (p.target_users?.overlap_keywords || []).join(', '));
+  sv('project_rhythm', p.calendar?.rhythm || '');
+  sv('project_monetization', (p.monetization || []).join(', '));
+  sv('project_key_nodes', (p.calendar?.key_nodes || []).join(', '));
+  sv('project_differentiation', (p.differentiation || []).join(', '));
+  sv('project_risk_redlines', (p.risk_redlines || []).join(', '));
+  const ta = document.getElementById('project_summary');
+  if (ta) ta.value = p.knowledge?.summary || '';
+}
+
+function onProjectChange() {
+  const p = state.project;
+  const wasEnabled = !!p.enabled;
+  p.enabled = cb('project_enabled');
+  p.name = gv('project_name').trim();
+  p.genre = gv('project_genre').trim();
+  p.stage = gv('project_stage').trim();
+  p.platform = gv('project_platform').trim();
+  p.core_systems = splitList(gv('project_core_systems'));
+  p.target_users = {
+    persona: gv('project_persona').trim(),
+    pay_habits: gv('project_pay_habits').trim(),
+    overlap_keywords: splitList(gv('project_overlap_keywords'))
+  };
+  p.monetization = splitList(gv('project_monetization'));
+  p.calendar = { rhythm: gv('project_rhythm').trim(), key_nodes: splitList(gv('project_key_nodes')) };
+  p.differentiation = splitList(gv('project_differentiation'));
+  p.risk_redlines = splitList(gv('project_risk_redlines'));
+  p.knowledge = { summary: gv('project_summary'), docs: p.knowledge?.docs || [] };
+  syncProjectInputs();
+  autoSave();
+  if (wasEnabled !== p.enabled) {
+    toast(p.enabled ? '评分参照系已启用：项目字段将注入相关维度打分' : '评分参照系已关闭：退化为通用关键词评分');
+  }
+}
+
 function addModule() {
   const name = gv('new-module-name').trim();
   if (!name) return toast('请输入模块名称');
-  if (state.scoring.mount_points.modules.includes(name)) return toast('已存在');
-  state.scoring.mount_points.modules.push(name);
+  if (state.project.mount_modules.includes(name)) return toast('已存在');
+  state.project.mount_modules.push(name);
   sv('new-module-name','');
   renderModules(); autoSave();
 }
 function removeModule(name) {
-  state.scoring.mount_points.modules = state.scoring.mount_points.modules.filter(m => m !== name);
+  state.project.mount_modules = state.project.mount_modules.filter(m => m !== name);
   renderModules(); autoSave();
 }
 function renderModules() {
   const c = document.getElementById('module-list');
+  if (!c) return;
   c.innerHTML = '';
-  (state.scoring.mount_points.modules || []).forEach(m => {
+  (state.project.mount_modules || []).forEach(m => {
     const div = document.createElement('div');
     div.className = 'list-item';
     div.innerHTML = `
@@ -952,19 +1222,33 @@ function renderManualScoring() {
   const tierOrder = Object.entries(s.tiers).sort((a,b) => b[1].min - a[1].min);
   const tierLine = tierOrder.map(([n,t]) => `<b>${escHtml(n)}</b> ≥${t.min} ${escHtml(t.label||'')}`).join(' ｜ ');
   const maxScore = Object.values(s.dimensions).reduce((acc, d) => acc + (Number(d.weight)||0) * 5, 0);
+  const p = state.project;
+  const refEnabled = !!p.enabled;
+  const refName = [p.name, p.genre, p.stage].filter(Boolean).join(' · ') || '未命名';
+  const nRefs = Object.values(s.dimensions).filter(d => d.project_refs && Object.keys(d.project_refs).length).length;
 
   let html = `<div class="callout callout-info"><b>当前评分体系：${Object.keys(s.dimensions).length} 个维度 · 满分 ${maxScore.toFixed(1)} · 档位 ${tierLine}</b>
-  档位与权重可在「评分体系」页签调整，此处说明随之更新。</div>`;
-  html += '<table class="dim-criteria"><tr><th style="width:150px">维度（权重）</th><th>衡量什么</th><th style="width:46%">1–5 分判分标准</th></tr>';
+  参照系「我的项目」：<b>${refEnabled ? '已启用' : '未启用'}</b>（${escHtml(refName)}）${refEnabled ? `，${nRefs} 个维度引用项目字段` : '——启用后项目画像关键词将自动注入相关维度'}。档位、权重与项目画像可在「评分体系」页签调整，此处说明随之更新。</div>`;
+  html += '<table class="dim-criteria"><tr><th style="width:150px">维度（权重）</th><th>衡量什么</th><th style="width:30%">1–5 分判分标准</th><th style="width:24%">引用项目字段</th></tr>';
+  const REF_LABELS = {
+    'core_systems': '核心系统', 'target_users.overlap_keywords': '目标用户重叠词',
+    'mount_modules': '可挂载模块', 'calendar.key_nodes': '运营节点',
+    'differentiation': '差异化方向', 'monetization': '商业化模型', 'risk_redlines': '风险红线'
+  };
   Object.entries(s.dimensions).forEach(([id, d]) => {
     const crit = [5,4,3,2,1].map(n => {
       const t = d.criteria?.[n];
       return t ? `<div class="crit-${n}"><b>${n}分</b> — ${escHtml(t)}</div>` : '';
     }).filter(Boolean).join('');
+    const refEntry = Object.entries(d.project_refs || {})[0];
+    const refCell = refEntry
+      ? `${escHtml(REF_LABELS[refEntry[1]] || refEntry[1])}<br><span style="color:var(--text-muted);font-size:11.5px">${escHtml(refEntry[0])} 档${refEnabled ? '' : '（参照系未启用）'}</span>`
+      : '<span style="color:var(--text-muted)">通用（不引用）</span>';
     html += `<tr>
       <td><b>${escHtml(d.label||id)}</b><br><span style="color:var(--text-muted);font-size:11.5px">×${d.weight ?? 1}</span></td>
       <td>${escHtml(d.desc||'—')}</td>
       <td>${crit || '<span style="color:var(--text-muted)">未设置（可在「评分体系」页签补充）</span>'}</td>
+      <td>${refCell}</td>
     </tr>`;
   });
   html += '</table>';
@@ -982,9 +1266,50 @@ function applyUnified(doc) {
     }));
   }
   if (doc.sources) {
+    const s = doc.sources;
+    // 兼容新旧字段：wcrss.enabled（v2.1）缺失时默认开
+    const wcrss = s.wcrss || {};
+    let extra = Array.isArray(s.extra_sources) ? s.extra_sources.map(e => ({
+      id: e.id, label: e.label || e.id,
+      enabled: e.enabled !== false, automation: e.automation || 'semi', desc: e.desc || ''
+    })) : null;
+    // 旧版导入（无 extra_sources）：预置 hykb/taptap 两条默认条目
+    if (!extra) {
+      extra = [
+        { id: 'hykb',   label: '好游快爆', enabled: true,  automation: 'full', desc: '评分 + 更新公告。resolve.py 自动搜索定位 fid，零配置开箱即用。' },
+        { id: 'taptap', label: 'TapTap',   enabled: true,  automation: 'semi', desc: '评分快照。resolve.py 生成占位并给出 _hint 搜索链接，需按提示补 app_id。' }
+      ];
+    }
     state.sources = {
-      wcrss: { feed_url: doc.sources.wcrss?.feed_url || doc.sources.wcrss?.wcrss_feed_url || '' },
-      fetch_defaults: doc.sources.fetch_defaults || { recent_days:3, num:50 }
+      wcrss: {
+        enabled: wcrss.enabled !== false,
+        feed_url: wcrss.feed_url || wcrss.wcrss_feed_url || ''
+      },
+      official: { enabled: (s.official || {}).enabled !== false },
+      extra_sources: extra,
+      fetch_defaults: s.fetch_defaults || { recent_days: 3, num: 50 }
+    };
+  }
+  if (doc.project || doc.scoring?.mount_points) {
+    // project 节解析 + 旧版 mount_points 迁移（v2.1 → v2.2）
+    const p = doc.project || {};
+    const legacyModules = doc.scoring?.mount_points?.modules || [];
+    state.project = {
+      enabled: p.enabled !== undefined ? !!p.enabled
+        : !!(p.name || (p.core_systems || []).length || legacyModules.length),
+      name: p.name || '', genre: p.genre || '', stage: p.stage || '', platform: p.platform || '',
+      core_systems: p.core_systems || [],
+      target_users: {
+        persona: p.target_users?.persona || '',
+        pay_habits: p.target_users?.pay_habits || '',
+        overlap_keywords: p.target_users?.overlap_keywords || []
+      },
+      mount_modules: (p.mount_modules && p.mount_modules.length) ? p.mount_modules : legacyModules,
+      monetization: p.monetization || [],
+      calendar: { rhythm: p.calendar?.rhythm || '', key_nodes: p.calendar?.key_nodes || [] },
+      differentiation: p.differentiation || [],
+      risk_redlines: p.risk_redlines || [],
+      knowledge: { summary: p.knowledge?.summary || '', docs: p.knowledge?.docs || [] }
     };
   }
   if (doc.scoring) {
@@ -994,8 +1319,7 @@ function applyUnified(doc) {
       tiers: doc.scoring.tiers || {},
       dimensions: doc.scoring.dimensions || {},
       source_weight_bias: doc.scoring.source_weight_bias || state.scoring.source_weight_bias,
-      industry_filter: doc.scoring.industry_filter || state.scoring.industry_filter,
-      mount_points: doc.scoring.mount_points || { modules: [] }
+      industry_filter: doc.scoring.industry_filter || state.scoring.industry_filter
     };
     // 兼容旧版仅有 weights（无 dimensions 详情）：用默认 label 填充骨架
     const fallbackLabels = {
@@ -1091,6 +1415,7 @@ function loadFromStorage() {
 // ═══════════════ Init ═══════════════
 function renderAll() {
   renderGames();
+  syncProjectInputs();
   syncSourcesInputs();
   renderDimensions();
   renderTiers();
@@ -1117,6 +1442,16 @@ if (!restored) {
   Object.entries(defaults).forEach(([id, [label, weight, desc]]) => {
     state.scoring.dimensions[id] = { label, weight, desc, criteria: {5:'',4:'',3:'',2:'',1:''}, boost:{}, penalty:{} };
   });
+  // 与 config/mmo-example.json 一致的 project_refs 骨架（字段内容在「我的项目」卡片填写）
+  const refMap = {
+    A_strategy_fit: ['+2','core_systems'], B_user_match: ['+2','target_users.overlap_keywords'],
+    C_portability: ['+1','mount_modules'],  E_cycle_fit: ['+2','calendar.key_nodes'],
+    F_differentiation: ['+2','differentiation'], G_pay_drive: ['+2','monetization'],
+    I_risk_inverse: ['-2','risk_redlines']
+  };
+  Object.entries(refMap).forEach(([id, [delta, path]]) => {
+    if (state.scoring.dimensions[id]) state.scoring.dimensions[id].project_refs = { [delta]: path };
+  });
   state.scoring.tiers = {
     S: { min: 36, label: '强烈推荐 · 战略级' },
     A: { min: 32, label: '可立项 · 进策划评审' },
@@ -1124,7 +1459,7 @@ if (!restored) {
     C: { min: 22, label: '存档参考' },
     D: { min:  0, label: '忽略' }
   };
-  state.scoring.mount_points.modules = ['直购体系','血盟红包','赛季礼包','系统邮件','成就系统','时装商城','活动模块','签到日历','节气运营','UGC共创','新服运营','回流活动'];
+  state.project.mount_modules = ['直购体系','血盟红包','赛季礼包','系统邮件','成就系统','时装商城','活动模块','签到日历','节气运营','UGC共创','新服运营','回流活动'];
 }
 renderAll();
 </script>

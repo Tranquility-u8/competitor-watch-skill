@@ -334,6 +334,25 @@ def render_markdown(rows, kind: str, label: str, start: datetime, end: datetime,
     out.append(f"区间：{start.strftime('%Y-%m-%d %H:%M')} ~ {end.strftime('%Y-%m-%d %H:%M')} (CST)")
     out.append("")
 
+    # 评分参照系（project 节 enabled 时显示，附 meta 快照供回溯当时基准）
+    project = config_loader.get_section("project")
+    if project.get("enabled") and (project.get("name") or project.get("genre")):
+        ref = " · ".join(x for x in (
+            project.get("name"), project.get("genre"), project.get("stage")) if x)
+        out.append(f"> 评分参照系：{ref}（配置：评分体系 → 我的项目）")
+        out.append("")
+        snap: dict = {k: project[k] for k in
+                      ("name", "genre", "stage", "platform") if project.get(k)}
+        for k in ("core_systems", "mount_modules", "monetization",
+                  "differentiation", "risk_redlines"):
+            if project.get(k):
+                snap[k] = project[k]
+        for k in ("calendar", "target_users"):
+            if project.get(k):
+                snap[k] = project[k]
+        out.append(f"<!-- project-snapshot: {json.dumps(snap, ensure_ascii=False)} -->")
+        out.append("")
+
     def render_section(name: str) -> None:
         if name == "overview":
             out.append(section_titles.get("overview", "## 概览"))
